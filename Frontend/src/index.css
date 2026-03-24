@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================
+   SWAYAM SAARTHI DESIGN SYSTEM
+   Light (default) + Dark (class)
+================================ */
+
+@layer base {
+  /* 🌞 LIGHT MODE (DEFAULT) */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* 🔵 Blue primary for light mode */
+    --primary: 221 83% 53%; /* blue-600 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 221 83% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.75rem;
+
+    /* Glass + gradient (light) */
+    --gradient-start: 0 0% 100%;
+    --gradient-end: 210 40% 96%;
+    --glass-bg: 0 0% 100%;
+    --glass-border: 214 32% 91%;
+    --glow-primary: 221 83% 53%;
+    --glow-secondary: 221 83% 60%;
+  }
+
+  /* 🌙 DARK MODE (CURRENT THEME) */
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    /* 🟡 Gold primary for dark mode */
+    --primary: 38 92% 50%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 17%;
+    --ring: 38 92% 50%;
+
+    --gradient-start: 222 47% 6%;
+    --gradient-end: 222 47% 12%;
+    --glass-bg: 222 47% 11%;
+    --glass-border: 217 33% 25%;
+    --glow-primary: 38 92% 50%;
+    --glow-secondary: 38 92% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gradient-start)) 0%,
+      hsl(var(--gradient-end)) 100%
+    );
+    min-height: 100vh;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Glass Card */
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl border border-border/50;
+    background: hsl(var(--glass-bg) / 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300;
+  }
+
+  .glass-card-hover:hover {
+    @apply border-primary/30;
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -12px hsl(var(--glow-primary) / 0.15);
+  }
+
+  .navbar-glass {
+    @apply fixed top-0 left-0 right-0 z-50 border-b border-border/30;
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(16px);
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--glow-secondary)) 100%
+    );
+  }
+
+  .gradient-primary {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--glow-secondary)) 100%
+    );
+  }
+
+  .badge-verified {
+    @apply bg-success/20 text-success border border-success/30;
+  }
+
+  .badge-online {
+    @apply bg-success/20 text-success border border-success/30;
+  }
+
+  .badge-offline {
+    @apply bg-destructive/20 text-destructive border border-destructive/30;
+  }
+
+  .page-container {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px -5px hsl(var(--glow-primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px -5px hsl(var(--glow-primary) / 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
