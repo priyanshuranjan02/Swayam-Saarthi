@@ -8,6 +8,41 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import PageLayout from '@/components/layout/PageLayout';
 
+const getPasswordStrength = (password: string) => {
+  let score = 0;
+
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 2) {
+    return {
+      label: "Weak",
+      percentage: 30,
+      color: "bg-red-500",
+      textColor: "text-red-500",
+    };
+  }
+
+  if (score <= 4) {
+    return {
+      label: "Medium",
+      percentage: 70,
+      color: "bg-yellow-500",
+      textColor: "text-yellow-500",
+    };
+  }
+
+  return {
+    label: "Strong",
+    percentage: 100,
+    color: "bg-green-500",
+    textColor: "text-green-500",
+  };
+};
+
 const RegisterUser = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -50,6 +85,7 @@ const RegisterUser = () => {
     }
   };
 
+  const passwordStrength = getPasswordStrength(password);
   return (
     <PageLayout showFooter={false}>
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
@@ -124,6 +160,47 @@ const RegisterUser = () => {
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
+              </div>
+
+              {password && (
+                <div className="space-y-2 mt-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Password Strength</span>
+                            
+                    <span className={passwordStrength.textColor}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                            
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${passwordStrength.color}`}
+                      style={{
+                        width: `${passwordStrength.percentage}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-muted-foreground space-y-1">
+
+                  <p>
+                    ✓ Minimum 8 characters
+                  </p>
+                            
+                  <p>
+                    ✓ Uppercase & lowercase letters
+                  </p>
+                            
+                  <p>
+                    ✓ Numbers
+                  </p>
+                            
+                  <p>
+                    ✓ Special characters
+                  </p>
+                            
               </div>
 
               <div className="space-y-2">

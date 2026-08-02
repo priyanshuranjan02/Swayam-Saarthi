@@ -2,6 +2,8 @@ import Driver from "../models/Driver.js";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 import { successResponse, errorResponse } from "../utils/responseHelper.js";
+import Admin from "../models/Admin.js";
+import { hashPassword, comparePassword } from "../utils/hashPassword.js";
 
 /**
  * =========================
@@ -172,3 +174,78 @@ export const getAdminAnalytics = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
+
+export const getProfile = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.user.id).select("-password");
+
+    if (!admin) {
+      return errorResponse(res, "Admin not found", 404);
+    }
+
+    return successResponse(res, "Admin profile fetched", admin);
+  } catch (error) {
+    console.error("GET ADMIN PROFILE ERROR:", error);
+    return errorResponse(res, "Server error", 500);
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, phone } = req.body;
+
+    const admin = await Admin.findById(req.user.id);
+
+    if (!admin) {
+      return errorResponse(res, "Admin not found", 404);
+    }
+
+    if (name) admin.name = name;
+
+    if (phone !== undefined) {
+      admin.phone = phone;
+    }
+
+    await admin.save();
+
+    return successResponse(res, "Profile updated", {
+      name: admin.name,
+      email: admin.email,
+      phone: admin.phone,
+    });
+  } catch (error) {
+    console.error("UPDATE ADMIN PROFILE ERROR:", error);
+    return errorResponse(res, "Server error", 500);
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const admin = await Admin.findById(req.user.id);
+
+    if (!admin) {
+      return errorResponse(res, "Admin not found", 404);
+    }
+
+    const isMatch = await comparePassword(
+      currentPassword,
+      admin.password
+    );
+
+    if (!isMatch) {
+      return errorResponse(res, "Current password incorrect", 400);
+    }
+
+    admin.password = await hashPassword(newPassword);
+
+    await admin.save();
+
+    return successResponse(res, "Password updated successfully");
+  } catch (error) {
+    console.error("CHANGE ADMIN PASSWORD ERROR:", error);
+    return errorResponse(res, "Server error", 500);
+  }
+};
+

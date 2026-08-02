@@ -65,7 +65,11 @@ const SelectDriver = () => {
       });
 
       toast.success(`${driver.name} selected successfully`);
-      navigate(`/booking-confirmation/${bookingId}`);
+      navigate("/waiting", {
+        state: {
+          bookingId,
+        },
+      });
     } catch (err) {
       toast.error("Failed to assign driver");
     } finally {

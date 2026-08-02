@@ -2,6 +2,7 @@ import app from "./app.js";
 import envConfig from "./config/env.js";
 import connectDB from "./config/db.js";
 import { server } from "./app.js";
+import userRoutes from "./routes/userRoutes.js";
 
 envConfig();
 

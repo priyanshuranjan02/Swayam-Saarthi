@@ -1,6 +1,8 @@
 import Payment from "../models/Payment.js";
 import Booking from "../models/Booking.js";
 import { successResponse, errorResponse } from "../utils/responseHelper.js";
+import { notifyDriver } from "../utils/socketEmit.js";
+import { SOCKET_EVENTS } from "../utils/socketEvents.js";
 
 /**
  * =========================
@@ -22,17 +24,33 @@ export const makePayment = async (req, res) => {
       return errorResponse(res, "Booking not found", 404);
     }
 
-    if (booking.status !== "completed") {
-      return errorResponse(res, "Complete the trip before payment", 400);
+    if (booking.status !== "accepted") {
+      return errorResponse(
+        res,
+        "Booking is not ready for payment",
+        400
+      );
     }
 
     const payment = await Payment.create({
       bookingId,
       userId,
       amount: booking.fare,
-      paymentMethod: paymentMethod || "cash",
+      paymentMethod: paymentMethod || "upi",
       status: "success",
     });
+
+    booking.status = "confirmed";
+    await booking.save();
+
+    notifyDriver(
+      booking.driverId,
+      SOCKET_EVENTS.PAYMENT_CONFIRMED,
+      {
+        bookingId: booking._id,
+        message: "Customer completed the payment.",
+      }
+    );
 
     return successResponse(res, "Payment successful", payment, 201);
   } catch (error) {

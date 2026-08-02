@@ -1,13 +1,41 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Menu, X, User, LogOut } from "lucide-react";
+import {
+  Car,
+  Menu,
+  X,
+  User,
+  LogOut,
+  LayoutDashboard,
+  Settings,
+  ChevronDown,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "./NotificationBell";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
 
@@ -17,6 +45,12 @@ const Navbar = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+  const dashboardPath =
+  user?.role === "admin"
+    ? "/admin"
+    : user?.role === "driver"
+    ? "/driver"
+    : "/user";
 
   return (
     <nav className="navbar-glass">
@@ -53,22 +87,52 @@ const Navbar = () => {
 
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
-                <Link to={user?.role === "driver" ? "/driver" : "/user"}>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <User className="h-4 w-4" />
-                    {user?.name}
-                  </Button>
-                </Link>
+                <NotificationBell />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="gap-2">
+                      <User className="h-4 w-4" />
+                      {user?.name}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
+                  <DropdownMenuContent align="end" className="w-56">
+
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        My Profile
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild>
+                      <Link to={dashboardPath} className="flex items-center gap-2">
+                        <LayoutDashboard className="h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem disabled>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        Soon
+                      </span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      onClick={() => setLogoutDialogOpen(true)}
+                      className="text-destructive"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* 🌗 THEME TOGGLE — RIGHT OF LOGOUT */}
                 <ThemeToggle />
@@ -125,7 +189,7 @@ const Navbar = () => {
               {isAuthenticated ? (
                 <>
                   <Link
-                    to={user?.role === "driver" ? "/driver" : "/user"}
+                    to={"/profile"}
                     onClick={() => setIsOpen(false)}
                   >
                     <Button
@@ -141,7 +205,7 @@ const Navbar = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={logout}
+                    onClick={() => setLogoutDialogOpen(true)}
                     className="gap-2"
                   >
                     <LogOut className="h-4 w-4" />
@@ -171,6 +235,41 @@ const Navbar = () => {
           </motion.div>
         )}
       </div>
+      <AlertDialog
+        open={logoutDialogOpen}
+        onOpenChange={setLogoutDialogOpen}
+      >
+        <AlertDialogContent>
+            
+          <AlertDialogHeader>
+            
+            <AlertDialogTitle>
+              Logout?
+            </AlertDialogTitle>
+            
+            <AlertDialogDescription>
+              You will be signed out of your account and redirected to the home page.
+            </AlertDialogDescription>
+            
+          </AlertDialogHeader>
+            
+          <AlertDialogFooter>
+            
+            <AlertDialogCancel>
+              Cancel
+            </AlertDialogCancel>
+            
+            <AlertDialogAction
+              onClick={logout}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Logout
+            </AlertDialogAction>
+            
+          </AlertDialogFooter>
+            
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   );
 };

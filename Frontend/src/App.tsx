@@ -7,6 +7,7 @@ import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BookingProvider } from "@/contexts/BookingContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 // Pages
 import Index from "./pages/Index";
@@ -23,6 +24,10 @@ import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import DriverEarnings from "./pages/DriverEarnings";
+import About from "./pages/About";
+import Profile from "./pages/Profile";
+import WaitingForDriver from "./pages/WaitingForDriver";
+import TrackRide from "@/pages/TrackRide";
 
 // ✅ User History
 import UserBookingHistory from "./pages/UserBookingHistory";
@@ -40,6 +45,7 @@ const App = () => (
       <BrowserRouter>
         <ThemeProvider>
           <AuthProvider>
+            <NotificationProvider>
             <BookingProvider>
               <AnimatePresence mode="wait">
                 <Routes>
@@ -48,6 +54,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/register/user" element={<RegisterUser />} />
                   <Route path="/register/driver" element={<RegisterDriver />} />
+                  <Route path="/about" element={<About />} />                  
 
                   {/* User Protected Routes */}
                   <Route
@@ -93,6 +100,15 @@ const App = () => (
                         <BookingConfirmation />
                       </ProtectedRoute>
                     }
+                  />
+
+                  <Route
+                      path="/waiting"
+                      element={
+                          <ProtectedRoute>
+                              <WaitingForDriver />
+                          </ProtectedRoute>
+                      }
                   />
 
                   <Route
@@ -142,12 +158,25 @@ const App = () => (
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                      path="/track-ride"
+                      element={<TrackRide />}
+                  />
 
                   {/* Catch-all */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </AnimatePresence>
             </BookingProvider>
+            </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>

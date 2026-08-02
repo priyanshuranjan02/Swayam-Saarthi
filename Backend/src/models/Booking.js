@@ -1,4 +1,3 @@
-// models/Booking.js
 import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(
@@ -38,8 +37,24 @@ const bookingSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "ongoing", "completed", "cancelled"],
-      default: "pending",
+      enum: [
+          "pending",      // Waiting for driver
+          "accepted",     // Driver accepted
+          "confirmed",    // Payment completed
+          "ongoing",      // Ride started
+          "completed",    // Ride finished
+          "rejected",     // Driver rejected
+          "cancelled"
+      ],
+      default: "pending"
+    },
+
+    startedAt: {
+      type: Date,
+    },
+
+    completedAt: {
+      type: Date,
     },
   },
   { timestamps: true }

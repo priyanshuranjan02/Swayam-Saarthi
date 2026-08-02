@@ -9,6 +9,7 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
@@ -30,7 +31,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/driver", driverRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/payment", paymentRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/users", userRoutes);
 
 /* =========================
    ERROR HANDLER (LAST)
@@ -59,6 +61,17 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("❌ Socket disconnected:", socket.id);
+  });
+
+  socket.on("driver:location", (data) => {
+
+    io.to(data.bookingId).emit(
+
+        "driver:location",
+
+        data
+
+    );
   });
 });
 

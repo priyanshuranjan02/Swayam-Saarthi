@@ -111,8 +111,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     socket.connect();
   }
 
-  socket.emit("join", user.id);
-
+  socket.emit("join-room", user.id);
+  
   return () => {
     socket.off("booking:new");
     socket.off("booking:accepted");

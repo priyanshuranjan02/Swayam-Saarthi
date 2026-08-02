@@ -4,14 +4,15 @@ import roleMiddleware from "../middleware/roleMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 import {
-  getDriverProfile,
   updateAvailability,
   getPendingBookings,
-  acceptBooking,
-  rejectBooking,
   getActiveBooking,
   getDriverEarningsAnalytics,
-  getDriverEarnings
+  getDriverEarnings,
+  getProfile,
+  updateProfile,
+  changePassword,
+  startRide
 } from "../controllers/driverController.js";
 
 const router = express.Router();
@@ -21,14 +22,6 @@ const router = express.Router();
  * DRIVER ROUTES
  * =========================
  */
-
-// 🔹 Driver profile
-router.get(
-  "/profile",
-  protect,
-  roleMiddleware("driver"),
-  getDriverProfile
-);
 
 // 🔹 Toggle availability (online / offline)
 router.patch(
@@ -44,22 +37,6 @@ router.get(
   protect,
   roleMiddleware("driver"),
   getPendingBookings
-);
-
-// 🔹 Accept booking
-router.post(
-  "/bookings/accept/:bookingId",
-  protect,
-  roleMiddleware("driver"),
-  acceptBooking
-);
-
-// 🔹 Reject booking
-router.post(
-  "/bookings/reject/:bookingId",
-  protect,
-  roleMiddleware("driver"),
-  rejectBooking
 );
 
 // 🔹 Get active booking (accepted)
@@ -82,6 +59,34 @@ router.get(
   authMiddleware,
   roleMiddleware("driver"),
   getDriverEarnings
+);
+
+router.get(
+  "/profile",
+  authMiddleware,
+  roleMiddleware("driver"),
+  getProfile
+);
+
+router.put(
+  "/profile",
+  authMiddleware,
+  roleMiddleware("driver"),
+  updateProfile
+);
+
+router.put(
+  "/change-password",
+  authMiddleware,
+  roleMiddleware("driver"),
+  changePassword
+);
+
+router.patch(
+  "/booking/:bookingId/start",
+  authMiddleware,
+  roleMiddleware("driver"),
+  startRide
 );
 
 export default router;

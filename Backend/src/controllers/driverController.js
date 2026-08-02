@@ -1,30 +1,38 @@
 import Driver from "../models/Driver.js";
 import Booking from "../models/Booking.js";
 import { successResponse, errorResponse } from "../utils/responseHelper.js";
+import { hashPassword, comparePassword } from "../utils/hashPassword.js";
+import {
+  notifyUser,
+} from "../utils/socketEmit.js";
+
+import {
+  SOCKET_EVENTS,
+} from "../utils/socketEvents.js";
 
 /**
  * =========================
  * GET DRIVER PROFILE
  * =========================
  */
-export const getDriverProfile = async (req, res) => {
-  try {
-    if (!req.user || req.user.role !== "driver") {
-      return errorResponse(res, "Unauthorized", 401);
-    }
+// export const getDriverProfile = async (req, res) => {
+//   try {
+//     if (!req.user || req.user.role !== "driver") {
+//       return errorResponse(res, "Unauthorized", 401);
+//     }
 
-    const driver = await Driver.findById(req.user.id).select("-password");
+//     const driver = await Driver.findById(req.user.id).select("-password");
 
-    if (!driver) {
-      return errorResponse(res, "Driver not found", 404);
-    }
+//     if (!driver) {
+//       return errorResponse(res, "Driver not found", 404);
+//     }
 
-    return successResponse(res, "Driver profile fetched", driver);
-  } catch (error) {
-    console.error("GET DRIVER PROFILE ERROR:", error);
-    return errorResponse(res, "Server error", 500);
-  }
-};
+//     return successResponse(res, "Driver profile fetched", driver);
+//   } catch (error) {
+//     console.error("GET DRIVER PROFILE ERROR:", error);
+//     return errorResponse(res, "Server error", 500);
+//   }
+// };
 
 /**
  * =========================
@@ -87,62 +95,6 @@ export const getPendingBookings = async (req, res) => {
 
 /**
  * =========================
- * DRIVER ACCEPTS BOOKING
- * =========================
- */
-export const acceptBooking = async (req, res) => {
-  try {
-    if (!req.user || req.user.role !== "driver") {
-      return errorResponse(res, "Unauthorized", 401);
-    }
-
-    const { bookingId } = req.params;
-
-    const booking = await Booking.findOne({
-      _id: bookingId,
-      status: "pending",
-      driverId: null
-    });
-
-    if (!booking) {
-      return errorResponse(res, "Booking not available", 404);
-    }
-
-    booking.driverId = req.user.id;
-    booking.status = "ongoing";
-    await booking.save();
-
-    await Driver.findByIdAndUpdate(req.user.id, {
-      isAvailable: false
-    });
-
-    return successResponse(res, "Booking accepted", booking);
-  } catch (error) {
-    console.error("ACCEPT BOOKING ERROR:", error);
-    return errorResponse(res, "Server error", 500);
-  }
-};
-
-/**
- * =========================
- * DRIVER REJECTS BOOKING
- * =========================
- */
-export const rejectBooking = async (req, res) => {
-  try {
-    if (!req.user || req.user.role !== "driver") {
-      return errorResponse(res, "Unauthorized", 401);
-    }
-
-    return successResponse(res, "Booking rejected");
-  } catch (error) {
-    console.error("REJECT BOOKING ERROR:", error);
-    return errorResponse(res, "Server error", 500);
-  }
-};
-
-/**
- * =========================
  * GET DRIVER ACTIVE BOOKING
  * =========================
  */
@@ -154,12 +106,67 @@ export const getActiveBooking = async (req, res) => {
 
     const booking = await Booking.findOne({
       driverId: req.user.id,
-      status: "ongoing"
+      status: {
+        $in: [
+          "accepted",
+          "confirmed",
+          "ongoing",
+        ],
+      },
     }).populate("userId", "name email");
 
     return successResponse(res, "Active booking fetched", booking);
   } catch (error) {
     console.error("GET ACTIVE BOOKING ERROR:", error);
+    return errorResponse(res, "Server error", 500);
+  }
+};
+
+export const startRide = async (req, res) => {
+  try {
+    if (req.user?.role !== "driver") {
+      return errorResponse(res, "Unauthorized", 401);
+    }
+
+    const { bookingId } = req.params;
+
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      driverId: req.user.id,
+      status: "confirmed",
+    });
+
+    if (!booking) {
+      return errorResponse(
+        res,
+        "Booking not ready to start",
+        404
+      );
+    }
+
+    booking.status = "ongoing";
+    booking.startedAt = new Date();
+
+    await booking.save();
+
+    notifyUser(
+      booking.userId,
+      SOCKET_EVENTS.RIDE_STARTED,
+      {
+        bookingId: booking._id,
+        status: "ongoing",
+        message: "Your ride has started.",
+      }
+    );
+
+    return successResponse(
+      res,
+      "Ride started successfully",
+      booking
+    );
+
+  } catch (err) {
+    console.error("START RIDE ERROR:", err);
     return errorResponse(res, "Server error", 500);
   }
 };
@@ -294,3 +301,85 @@ export const getDriverEarnings = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
+
+
+export const getProfile = async (req, res) => {
+  try {
+    const driver = await Driver.findById(req.user.id).select("-password");
+
+    if (!driver) {
+      return errorResponse(res, "Driver not found", 404);
+    }
+
+    return successResponse(res, "Driver profile fetched", driver);
+  } catch (error) {
+    console.error("GET DRIVER PROFILE ERROR:", error);
+    return errorResponse(res, "Server error", 500);
+  }
+};
+
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, phone } = req.body;
+
+    const driver = await Driver.findById(req.user.id);
+
+    if (!driver) {
+      return errorResponse(res, "Driver not found", 404);
+    }
+
+    if (name) driver.name = name;
+
+    if (phone !== undefined) {
+      driver.phone = phone;
+    }
+
+    await driver.save();
+
+    return successResponse(res, "Profile updated", {
+      name: driver.name,
+      email: driver.email,
+      phone: driver.phone,
+      isVerified: driver.isVerified,
+      isAvailable: driver.isAvailable,
+    });
+
+  } catch (error) {
+    console.error("UPDATE DRIVER PROFILE ERROR:", error);
+    return errorResponse(res, "Server error", 500);
+  }
+};
+
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const driver = await Driver.findById(req.user.id);
+
+    if (!driver) {
+      return errorResponse(res, "Driver not found", 404);
+    }
+
+    const isMatch = await comparePassword(
+      currentPassword,
+      driver.password
+    );
+
+    if (!isMatch) {
+      return errorResponse(res, "Current password incorrect", 400);
+    }
+
+    driver.password = await hashPassword(newPassword);
+
+    await driver.save();
+
+    return successResponse(res, "Password updated successfully");
+  } catch (error) {
+    console.error("CHANGE DRIVER PASSWORD ERROR:", error);
+    return errorResponse(res, "Server error", 500);
+  }
+};
+
+

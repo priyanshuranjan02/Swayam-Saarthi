@@ -1,5 +1,3 @@
-// Admin.js               # Admin schema (optional)
-
 import mongoose from "mongoose";
 
 const adminSchema = new mongoose.Schema(
@@ -13,6 +11,13 @@ const adminSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+    },
+
+    phone: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
     },
 
     password: {

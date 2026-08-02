@@ -26,12 +26,18 @@ export const registerUser = async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const user = await User.create({
+    const userData = {
       name,
       email,
       password: hashedPassword,
-      phone: phone || null,
-    });
+    };
+    
+    // Only add phone if it was provided
+    if (phone && phone.trim() !== "") {
+      userData.phone = phone.trim();
+    }
+    
+    const user = await User.create(userData);
 
     const token = generateToken(user._id, user.role);
 

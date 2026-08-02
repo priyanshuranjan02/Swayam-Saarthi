@@ -14,6 +14,7 @@ import PageLayout from "@/components/layout/PageLayout";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { Link } from "react-router-dom";
+import useDriverLocation from "@/hooks/useDriverLocation";
 
 /* ================= TYPES ================= */
 interface DriverProfile {
@@ -53,6 +54,10 @@ const DriverDashboard = () => {
   const [earnings, setEarnings] = useState<DriverEarnings | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  useDriverLocation(
+    activeBooking?._id,
+    activeBooking?.status === "ongoing"
+  );
 
   /* ================= FETCH DRIVER DATA ================= */
 const fetchDriverData = async () => {
@@ -134,12 +139,38 @@ useEffect(() => {
 
   const completeRide = async () => {
     if (!activeBooking) return;
+
     try {
-      await api.put(`/bookings/complete/${activeBooking._id}`);
-      toast.success("Trip completed");
+      await api.patch(
+        `/bookings/complete/${activeBooking._id}`
+      );
+
+      toast.success("Ride completed");
       fetchDriverData();
-    } catch {
-      toast.error("Failed to complete trip");
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message ||
+        "Unable to complete ride"
+      );
+    }
+  };
+
+  const handleStartRide = async () => {
+    if (!activeBooking) return;
+
+    try {
+      await api.patch(
+        `/driver/booking/${activeBooking._id}/start`
+      );
+
+      toast.success("Ride started");
+
+      fetchDriverData(); // or fetchBookings()
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message ||
+        "Unable to start ride"
+      );
     }
   };
 
@@ -248,22 +279,54 @@ useEffect(() => {
               <p><strong>Fare:</strong> ₹{activeBooking.fare}</p>
 
               <div className="flex gap-4 mt-4">
-                {!activeBooking.status || activeBooking.status === "pending" ? (
+
+                {/* Pending → Accept / Reject */}
+
+                {activeBooking.status === "pending" && (
                   <>
                     <button
                       onClick={acceptBooking}
                       className="flex-1 bg-success text-white py-2 rounded-lg flex items-center justify-center gap-2"
                     >
-                      <CheckCircle className="h-4 w-4" /> Accept
+                      <CheckCircle className="h-4 w-4" />
+                      Accept
                     </button>
+                
                     <button
                       onClick={rejectBooking}
                       className="flex-1 bg-destructive text-white py-2 rounded-lg flex items-center justify-center gap-2"
                     >
-                      <XCircle className="h-4 w-4" /> Reject
+                      <XCircle className="h-4 w-4" />
+                      Reject
                     </button>
                   </>
-                ) : (
+                )}
+
+                {/* Accepted → Waiting for payment */}
+              
+                {activeBooking.status === "accepted" && (
+                  <button
+                    disabled
+                    className="w-full bg-yellow-500 text-white py-2 rounded-lg cursor-not-allowed"
+                  >
+                    Waiting for Customer Payment...
+                  </button>
+                )}
+
+                {/* Confirmed → Start Ride */}
+              
+                {activeBooking.status === "confirmed" && (
+                  <button
+                    onClick={handleStartRide}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
+                  >
+                    🚗 Start Ride
+                  </button>
+                )}
+
+                {/* Ongoing → Complete Ride */}
+              
+                {activeBooking.status === "ongoing" && (
                   <button
                     onClick={completeRide}
                     className="w-full bg-primary text-white py-2 rounded-lg"
@@ -271,6 +334,18 @@ useEffect(() => {
                     Complete Ride
                   </button>
                 )}
+
+                {/* Completed */}
+              
+                {activeBooking.status === "completed" && (
+                  <button
+                    disabled
+                    className="w-full bg-gray-400 text-white py-2 rounded-lg cursor-not-allowed"
+                  >
+                    Trip Completed
+                  </button>
+                )}
+
               </div>
             </div>
           )}

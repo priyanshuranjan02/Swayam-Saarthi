@@ -64,18 +64,26 @@ const Payment = () => {
     try {
       setIsProcessing(true);
 
-      // 🔥 Mock payment delay
-      await new Promise((res) => setTimeout(res, 2000));
+      // Mock payment delay (optional)
+      await new Promise((res) => setTimeout(res, 1500));
+
+      await api.post("/payments/pay", {
+        bookingId,
+        paymentMethod: selectedMethod,
+      });
 
       setIsSuccess(true);
+
       toast.success("Payment successful 🎉");
 
-      // Redirect after animation
       setTimeout(() => {
         navigate("/user");
       }, 2000);
-    } catch {
-      toast.error("Payment failed. Please try again.");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+        "Payment failed. Please try again."
+      );
     } finally {
       setIsProcessing(false);
     }

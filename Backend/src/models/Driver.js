@@ -15,11 +15,12 @@ const driverSchema = new mongoose.Schema(
       lowercase: true,
     },
 
-    // phone: {
-    //   type: String,
-    //   required: true,
-    //   unique: true,
-    // },
+    phone: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
+    },
 
     password: {
       type: String,

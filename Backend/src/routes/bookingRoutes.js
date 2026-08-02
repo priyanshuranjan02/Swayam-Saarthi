@@ -9,7 +9,8 @@ import {
   driverRejectBooking,
   getBookingById,
   getUserBookingHistory,
-  getDriverBookingHistory
+  getDriverBookingHistory,
+  completeRide,
 } from "../controllers/bookingController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -107,6 +108,13 @@ router.get(
   authMiddleware,
   roleMiddleware("user", "driver"),
   getBookingById
+);
+
+router.patch(
+  "/complete/:bookingId",
+  authMiddleware,
+  roleMiddleware("driver"),
+  completeRide
 );
 
 export default router;

@@ -79,6 +79,11 @@ const UserDashboard = () => {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+            <Link to="/track-ride">
+              <Button>
+                Track Ride
+              </Button>
+            </Link>
           </motion.div>
         </motion.div>
       </div>
