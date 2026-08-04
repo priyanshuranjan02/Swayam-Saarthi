@@ -59,6 +59,11 @@ export const NotificationProvider = ({
   const [unreadCount, setUnreadCount] = useState(0);
   
   const fetchNotifications = async () => {
+    const token = localStorage.getItem("token");
+
+    // Don't fetch if user is not logged in
+    if (!token) return;
+
     try {
       setLoading(true);
 
@@ -111,6 +116,11 @@ export const NotificationProvider = ({
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    
+    // Don't initialize notifications until user logs in
+    if (!token) return;
+    
     fetchNotifications();
     
     const refreshNotifications = () => {
