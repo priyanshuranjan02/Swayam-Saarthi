@@ -200,7 +200,7 @@ const CreateBooking = () => {
                 type="submit"
                 variant="hero"
                 size="lg"
-                className="h-[300px] sm:h-[400px] lg:h-[500px] sm:w-auto"
+                className="w-full sm:w-auto sm:min-w-[220px] h-12"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -211,11 +211,10 @@ const CreateBooking = () => {
                 ) : (
                   <>
                     Next Step
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5 ml-2" />
                   </>
                 )}
               </Button>
-              
             </form>
           </div>
 

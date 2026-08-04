@@ -188,16 +188,6 @@ export default function TrackRide() {
 
   }, [driverLocation, booking]);
 
-  if (!booking) {
-    return (
-      <PageLayout>
-        <div className="page-container">
-          Loading...
-        </div>
-      </PageLayout>
-    );
-  }
-
   useEffect(() => {
     if (distanceRemaining <= 0) {
       setEta(0);
@@ -252,6 +242,16 @@ export default function TrackRide() {
     driverArrived,
     arrivalNotified,
   ]);
+
+  if (!booking) {
+    return (
+      <PageLayout>
+        <div className="page-container">
+          Loading...
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>
