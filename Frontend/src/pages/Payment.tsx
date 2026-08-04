@@ -12,13 +12,18 @@ import { Button } from "@/components/ui/button";
 import PageLayout from "@/components/layout/PageLayout";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { LocationResult } from "@/components/location/types";
 
 /* ================= TYPES ================= */
 type PaymentMethod = "upi" | "card";
 
 interface Booking {
-  pickupLocation: string;
-  dropLocation: string;
+  pickupLocation: LocationResult;
+  dropLocation: LocationResult;
+
+  routeDistance?: number;
+  routeDuration?: number;
+
   fare: number;
   status: string;
 }
@@ -77,7 +82,7 @@ const Payment = () => {
       toast.success("Payment successful 🎉");
 
       setTimeout(() => {
-        navigate("/user");
+        navigate(`/track-ride/${bookingId}`);
       }, 2000);
     } catch (err: any) {
       toast.error(
@@ -149,17 +154,79 @@ const Payment = () => {
                   </p>
                 </div>
 
-                {/* AMOUNT */}
-                <div className="glass-card p-6 mb-6 text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Amount to Pay
-                  </p>
-                  <div className="flex items-center justify-center gap-1">
-                    <IndianRupee className="h-8 w-8 text-primary" />
-                    <span className="text-4xl font-bold gradient-text">
-                      {booking.fare}
+                {/* TRIP SUMMARY */}
+                <div className="glass-card p-6 mb-6">
+
+                  <div className="flex justify-between mb-4">
+
+                    <span className="text-muted-foreground">
+                      Pickup
                     </span>
+
+                    <span className="font-medium text-right">
+                      {booking.pickupLocation?.name}
+                    </span>
+
                   </div>
+
+                  <div className="flex justify-between mb-4">
+
+                    <span className="text-muted-foreground">
+                      Drop
+                    </span>
+
+                    <span className="font-medium text-right">
+                      {booking.dropLocation?.name}
+                    </span>
+
+                  </div>
+
+                  <div className="h-px bg-border my-4" />
+
+                  <div className="flex justify-between mb-3">
+
+                    <span className="text-muted-foreground">
+                      Distance
+                    </span>
+
+                    <span className="font-semibold">
+                      {booking.routeDistance?.toFixed(1)} km
+                    </span>
+
+                  </div>
+
+                  <div className="flex justify-between mb-4">
+
+                    <span className="text-muted-foreground">
+                      Estimated Time
+                    </span>
+
+                    <span className="font-semibold">
+                      {Math.round(booking.routeDuration ?? 0)} mins
+                    </span>
+
+                  </div>
+
+                  <div className="h-px bg-border my-4" />
+
+                  <div className="flex items-center justify-between">
+
+                    <div className="flex items-center gap-2">
+
+                      <IndianRupee className="h-6 w-6 text-primary" />
+
+                      <span className="font-medium">
+                        Total Fare
+                      </span>
+
+                    </div>
+
+                    <span className="text-3xl font-bold gradient-text">
+                      ₹{booking.fare}
+                    </span>
+
+                  </div>
+
                 </div>
 
                 {/* PAYMENT METHODS */}

@@ -10,6 +10,8 @@ import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
 import userRoutes from "./routes/userRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 const app = express();
 
@@ -32,7 +34,9 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/driver", driverRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 /* =========================
    ERROR HANDLER (LAST)
@@ -51,27 +55,70 @@ export const io = new Server(server, {
   },
 });
 
+export const connectedDrivers = new Map();
+
 io.on("connection", (socket) => {
   console.log("🔗 Socket connected:", socket.id);
 
-  socket.on("join-room", (id) => {
-    socket.join(id); // userId / driverId / adminId
+  /**
+   * ==========================================
+   * Join Booking / User / Driver / Admin Room
+   * ==========================================
+   */
+  socket.on("join-room", ({ id, role }) => {
+    if (!id) return;
+
+    // Existing room (booking tracking / compatibility)
+    socket.join(id);
+
+    // New role-specific room
+    if (role) {
+      const roleRoom = `${role}:${id}`;
+      socket.join(roleRoom);
+
+      console.log(`📡 Joined role room: ${roleRoom}`);
+    }
+
+    // Keep existing driver tracking
+    if (role === "driver") {
+      connectedDrivers.set(id, socket.id);
+      console.log(`🚗 Driver connected: ${id}`);
+    }
+
     console.log(`📡 Joined room: ${id}`);
   });
 
-  socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected:", socket.id);
+  /**
+   * ==========================================
+   * Driver Live Location
+   * ==========================================
+   */
+  socket.on("driver:location", (data) => {
+    if (!data.bookingId) return;
+
+    io.to(data.bookingId).emit("driver:location", {
+      bookingId: data.bookingId,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      updatedAt: Date.now(),
+    });
   });
 
-  socket.on("driver:location", (data) => {
+  /**
+   * ==========================================
+   * Disconnect
+   * ==========================================
+   */
+  socket.on("disconnect", () => {
+    for (const [driverId, socketId] of connectedDrivers.entries()) {
+      if (socketId === socket.id) {
+        connectedDrivers.delete(driverId);
+        console.log(`🚗 Driver disconnected: ${driverId}`);
+        break;
+      }
+    }
 
-    io.to(data.bookingId).emit(
-
-        "driver:location",
-
-        data
-
-    );
+    console.log("❌ Socket disconnected:", socket.id);
   });
 });
 

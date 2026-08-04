@@ -11,6 +11,7 @@ import {
   getUserBookingHistory,
   getDriverBookingHistory,
   completeRide,
+  updateDriverLocation
 } from "../controllers/bookingController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -115,6 +116,13 @@ router.patch(
   authMiddleware,
   roleMiddleware("driver"),
   completeRide
+);
+
+router.put(
+  "/:bookingId/location",
+  authMiddleware,
+  roleMiddleware("driver"),
+  updateDriverLocation
 );
 
 export default router;

@@ -8,19 +8,28 @@ import {
 
 import socket from "@/lib/socket";
 import { toast } from "sonner";
+import api from "@/lib/api";
 
 export interface Notification {
-  id: string;
+  _id: string;
   title: string;
   message: string;
-  time: string;
-  read: boolean;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
 }
 
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  markAllAsRead: () => void;
+  loading: boolean;
+  fetchNotifications: () => Promise<void>;
+
+  markAsRead: (
+    id: string
+  ) => Promise<void>;
+
+  markAllAsRead: () => Promise<void>;
 }
 
 const NotificationContext =
@@ -43,122 +52,95 @@ export const NotificationProvider = ({
   children: ReactNode;
 }) => {
 
-  const [notifications, setNotifications] = useState<
-    Notification[]
-  >([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const addNotification = (
-    title: string,
-    message: string
+  const [loading, setLoading] = useState(false);
+
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+
+      const [notificationsRes, unreadRes] =
+        await Promise.all([
+          api.get("/notifications"),
+          api.get("/notifications/unread-count"),
+        ]);
+
+      setNotifications(
+        notificationsRes.data.data
+      );
+
+      setUnreadCount(
+        unreadRes.data.data.count
+      );
+
+    } catch (error) {
+      console.error(
+        "FETCH NOTIFICATIONS ERROR:",
+        error
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAsRead = async (
+    id: string
   ) => {
 
-    setNotifications((prev) => [
+    try {
+      await api.patch(
+        `/notifications/${id}/read`
+      );
 
-      {
-        id: crypto.randomUUID(),
-        title,
-        message,
-        time: new Date().toLocaleTimeString(),
-        read: false,
-      },
+      await fetchNotifications();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-      ...prev,
-
-    ]);
-
+  const markAllAsRead = async () => {
+    try {
+      await api.patch("/notifications/read-all");
+      await fetchNotifications();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
-    socket.off("booking:new");
-    socket.off("booking:accepted");
-    socket.off("booking:rejected");
-    socket.off("payment:confirmed");
-    socket.off("ride:started");
-    socket.off("ride:completed");
-
-    socket.on("booking:new", (data) => {   
-        toast.success(data.message);
-
-      addNotification(
-        "New Booking",
-        `${data.pickup} → ${data.drop}`
-      );
-    });
-
-    socket.on("booking:accepted", (data) => {
-        toast.success(data.message);
-        
-      addNotification(
-        "Booking Accepted",
-        data.message
-      );
-    });
-
-    socket.on("payment:confirmed", (data) => {
-      toast.success(data.message);
-
-      addNotification(
-        "Payment Confirmed",
-        data.message
-      );
+    fetchNotifications();
     
-    });
-
-    socket.on("booking:rejected", (data) => {
-        toast.error(data.message);
-
-      addNotification(
-        "Booking Rejected",
-        data.message
-      );
-    });
-
-    socket.on("ride:started", (data) => {
-      toast.success(data.message);
-
-      addNotification(
-        "Ride Started",
-        data.message
-      );
-
-    });
-
-    socket.on("ride:completed", (data) => {
-      toast.success(data.message);
-
-      addNotification(
-        "Ride Completed",
-        data.message
-      );
-    
-    });
-
-    return () => {
-      socket.off("booking:new");
-      socket.off("booking:accepted");
-      socket.off("booking:rejected");
-      socket.off("payment:confirmed");
-      socket.off("ride:started");
-      socket.off("ride:completed");
+    const refreshNotifications = () => {
+      fetchNotifications();
     };
-
+  
+    socket.on(
+      "notification:new",
+      refreshNotifications
+    );
+  
+    return () => {
+      socket.off(
+        "notification:new",
+        refreshNotifications
+      );
+    };
   }, []);
 
   return (
 
     <NotificationContext.Provider
       value={{
-        notifications,
-        unreadCount:
-          notifications.filter((n) => !n.read).length,
-        markAllAsRead: () =>
-          setNotifications((prev) =>
-            prev.map((n) => ({
-              ...n,
-              read: true,
-            }))
-          ),
-      }}
+      notifications,
+      unreadCount,
+      loading,
+      fetchNotifications,
+      markAsRead,
+      markAllAsRead,
+    }}
     >
       {children}
     </NotificationContext.Provider>

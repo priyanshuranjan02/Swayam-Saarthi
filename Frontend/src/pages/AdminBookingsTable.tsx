@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { LocationResult } from "@/components/location/types";
 
 interface Booking {
   _id: string;
   userId?: { name: string };
   driverId?: { name: string };
-  pickupLocation: string;
-  dropLocation: string;
+  pickupLocation: LocationResult;
+  dropLocation: LocationResult;
   fare: number;
   status: string;
   createdAt: string;
@@ -93,7 +94,7 @@ const AdminBookingsTable = () => {
                   {booking.driverId?.name || "Not Assigned"}
                 </td>
                 <td className="py-3">
-                  {booking.pickupLocation} → {booking.dropLocation}
+                  {booking.pickupLocation?.name} → {booking.dropLocation?.name}
                 </td>
                 <td className="py-3 text-right">
                   ₹{booking.fare}

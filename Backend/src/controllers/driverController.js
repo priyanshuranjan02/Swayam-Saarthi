@@ -383,3 +383,156 @@ export const changePassword = async (req, res) => {
 };
 
 
+/**
+ * =====================================
+ * DRIVER DASHBOARD ANALYTICS
+ * =====================================
+ */
+
+export const getDriverDashboard = async (req, res) => {
+  try {
+
+    if (!req.user || req.user.role !== "driver") {
+      return errorResponse(res, "Unauthorized", 401);
+    }
+
+    const driver = await Driver.findById(req.user.id)
+      .select("-password");
+
+    if (!driver) {
+      return errorResponse(res, "Driver not found", 404);
+    }
+
+    const completedTrips = await Booking.find({
+      driverId: driver._id,
+      status: "completed",
+    });
+
+    const activeRide = await Booking.findOne({
+      driverId: driver._id,
+      status: {
+        $in: ["pending", "accepted", "confirmed", "ongoing"],
+      },
+    }).populate("userId", "name email");
+
+    const totalEarnings = completedTrips.reduce(
+      (sum, booking) => sum + (booking.fare || 0),
+      0
+    );
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    const todayEarnings = completedTrips
+      .filter((trip) => trip.createdAt >= today)
+      .reduce(
+        (sum, trip) => sum + (trip.fare || 0),
+        0
+      );
+
+    const averageFare =
+      completedTrips.length > 0
+        ? Math.round(
+            totalEarnings / completedTrips.length
+          )
+        : 0;
+
+    return successResponse(
+      res,
+      "Driver dashboard fetched",
+      {
+        profile: driver,
+
+        stats: {
+          todayEarnings,
+          totalEarnings,
+          completedTrips:
+            completedTrips.length,
+
+          averageFare,
+
+          averageRating:
+            driver.averageRating,
+
+          totalReviews:
+            driver.totalReviews,
+        },
+
+        activeRide,
+      }
+    );
+
+  } catch (err) {
+
+    console.error(
+      "DRIVER DASHBOARD ERROR:",
+      err
+    );
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
+
+  }
+};
+
+
+export const getWeeklyEarnings = async (req, res) => {
+  try {
+    const driverId = req.user.id;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const bookings = await Booking.find({
+      driverId,
+      status: "completed",
+      completedAt: { $gte: sevenDaysAgo },
+    });
+
+    const weeklyMap = {};
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+
+      const key = d.toISOString().split("T")[0];
+
+      weeklyMap[key] = 0;
+    }
+
+    bookings.forEach((booking) => {
+      const key = booking.completedAt
+        .toISOString()
+        .split("T")[0];
+
+      if (weeklyMap[key] !== undefined) {
+        weeklyMap[key] += booking.fare;
+      }
+    });
+
+    const chart = Object.keys(weeklyMap)
+      .sort()
+      .map((date) => ({
+        date,
+        earnings: weeklyMap[date],
+      }));
+
+    return successResponse(
+      res,
+      "Weekly earnings",
+      chart
+    );
+  } catch (err) {
+    console.error(err);
+    return errorResponse(
+      res,
+      "Server Error",
+      500
+    );
+  }
+};

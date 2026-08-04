@@ -1,61 +1,72 @@
 import { useEffect } from "react";
 import socket from "@/lib/socket";
+import api from "@/lib/api";
 
 const useDriverLocation = (
   bookingId?: string,
   enabled = false
 ) => {
-
   useEffect(() => {
-
     if (!enabled || !bookingId) return;
 
-    let watchId: number;
+    if (!navigator.geolocation) {
+      console.error("Geolocation is not supported.");
+      return;
+    }
 
-    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-    watchId = navigator.geolocation.watchPosition(
+        try {
+          // ===============================
+          // Save latest location in MongoDB
+          // ===============================
+          await api.put(
+            `/bookings/${bookingId}/location`,
+            {
+              latitude,
+              longitude,
+            }
+          );
 
-      (position) => {
+          // ===============================
+          // Broadcast location to user
+          // ===============================
+          socket.emit("driver:location", {
+            bookingId,
+            latitude,
+            longitude,
+          });
 
-        socket.emit("driver:location", {
-
-          bookingId,
-
-          latitude: position.coords.latitude,
-
-          longitude: position.coords.longitude,
-
-        });
-
+        } catch (err) {
+          console.error(
+            "Failed to update driver location:",
+            err
+          );
+        }
       },
 
       (err) => {
-
-        console.error(err);
-
+        console.error(
+          "Geolocation Error:",
+          err
+        );
       },
 
       {
-
         enableHighAccuracy: true,
-
         maximumAge: 0,
-
         timeout: 5000,
-
       }
-
     );
 
     return () => {
-
       navigator.geolocation.clearWatch(watchId);
-
     };
 
   }, [bookingId, enabled]);
-
 };
 
 export default useDriverLocation;

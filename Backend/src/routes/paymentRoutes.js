@@ -1,5 +1,5 @@
 import express from "express";
-import { makePayment } from "../controllers/paymentController.js";
+import { makePayment, getReceipt } from "../controllers/paymentController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
 import roleMiddleware from "../middleware/roleMiddleware.js";
@@ -17,6 +17,12 @@ router.post(
   authMiddleware,
   roleMiddleware("user"),
   makePayment
+);
+
+router.get(
+  "/receipt/:bookingId",
+  authMiddleware,
+  getReceipt
 );
 
 export default router;

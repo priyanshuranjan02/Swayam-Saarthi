@@ -3,16 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Navigation, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import LocationSearch from "@/components/location/LocationSearch";
 import { Label } from "@/components/ui/label";
 import { useBooking } from "@/contexts/BookingContext";
 import PageLayout from "@/components/layout/PageLayout";
 import StepIndicator from "@/components/booking/StepIndicator";
 import { toast } from "sonner";
+import { LocationResult } from "@/components/location/types";
+import { getRoute } from "@/services/routeService";
 
 const CreateBooking = () => {
   const [pickup, setPickup] = useState("");
   const [drop, setDrop] = useState("");
+  const [pickupLocation, setPickupLocation] = useState<LocationResult | null>(null);
+  const [dropLocation, setDropLocation] = useState<LocationResult | null>(null);
   const [errors, setErrors] = useState<{ pickup?: string; drop?: string }>({});
 
   const { createBooking, isLoading } = useBooking();
@@ -41,26 +45,71 @@ const CreateBooking = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!validate()) return;
-
+    
+    if (!pickupLocation || !dropLocation) {
+      toast.error("Please select locations from the suggestions.");
+      return;
+    }
+  
     try {
+      toast.loading("Calculating route...");
+    
+      // -----------------------------
+      // Get real route from OSRM
+      // -----------------------------
+      const route = await getRoute(
+        {
+          lat: pickupLocation.lat,
+          lon: pickupLocation.lon,
+        },
+        {
+          lat: dropLocation.lat,
+          lon: dropLocation.lon,
+        }
+      );
+    
+      // -----------------------------
+      // Dynamic Fare
+      // -----------------------------
+      const fare = Math.round(
+        40 +
+        route.distance * 12 +
+        route.duration * 2
+      );
+    
+      toast.dismiss();
+    
       const booking = await createBooking(
         pickup.trim(),
-        drop.trim()
+        drop.trim(),
+      
+        pickupLocation,
+        dropLocation,
+      
+        route.distance,
+        route.duration,
+        fare
       );
-
-      // 🔥 CRITICAL FIX: always use MongoDB _id
+    
       const bookingId = booking?._id;
-
+    
       if (!bookingId) {
-        toast.error("Invalid booking response. Please try again.");
+        toast.error("Invalid booking response.");
         return;
       }
-
+    
       toast.success("Trip details saved!");
+    
       navigate(`/select-driver/${bookingId}`);
+    
     } catch (error) {
-      toast.error("Failed to create booking. Please try again.");
+      console.error(error);
+    
+      toast.dismiss();
+    
+      toast.error("Unable to calculate route.");
     }
   };
 
@@ -81,66 +130,77 @@ const CreateBooking = () => {
 
           {/* TITLE */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
               Enter <span className="gradient-text">Trip Details</span>
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Tell us where you want to go
             </p>
           </div>
 
           {/* FORM */}
-          <div className="glass-card p-8">
+          <div className="glass-card p-5 sm:p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
+
+              {/* Pickup */}
               <div className="space-y-2">
-                <Label htmlFor="pickup">Pickup Location</Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-success" />
-                  <Input
-                    id="pickup"
-                    type="text"
+                  {/* <MapPin className="absolute left-3 top-[52px] h-5 w-5 text-success z-10" /> */}
+
+                  <LocationSearch
+                    icon={<MapPin className="text-success" />}
+                    label="Pickup Location"
                     placeholder="Enter pickup location"
                     value={pickup}
-                    onChange={(e) => setPickup(e.target.value)}
-                    className="pl-10"
+                    onChange={setPickup}
+                    onLocationSelect={(location) => {
+                      setPickup(location.name);
+                      setPickupLocation(location);
+                    }}
                   />
                 </div>
+                  
                 {errors.pickup && (
                   <p className="text-sm text-destructive">
                     {errors.pickup}
                   </p>
                 )}
               </div>
-
+              
               <div className="flex justify-center">
                 <div className="h-8 w-0.5 bg-border" />
               </div>
-
+              
+              {/* Drop */}
               <div className="space-y-2">
-                <Label htmlFor="drop">Drop Location</Label>
                 <div className="relative">
-                  <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-destructive" />
-                  <Input
-                    id="drop"
-                    type="text"
+                  {/* <Navigation className="absolute left-3 top-[52px] h-5 w-5 text-destructive z-10" /> */}
+              
+                  <LocationSearch
+                    icon={<Navigation className="text-destructive" />}
+                    label="Drop Location"
                     placeholder="Enter drop location"
                     value={drop}
-                    onChange={(e) => setDrop(e.target.value)}
-                    className="pl-10"
+                    onChange={setDrop}
+                    onLocationSelect={(location) => {
+                      setDrop(location.name);
+                      setDropLocation(location);
+                    }}
                   />
                 </div>
+                  
                 {errors.drop && (
                   <p className="text-sm text-destructive">
                     {errors.drop}
                   </p>
                 )}
               </div>
-
+              
               <Button
                 type="submit"
                 variant="hero"
                 size="lg"
-                className="w-full gap-2"
+                className="h-[300px] sm:h-[400px] lg:h-[500px] sm:w-auto"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -155,6 +215,7 @@ const CreateBooking = () => {
                   </>
                 )}
               </Button>
+              
             </form>
           </div>
 

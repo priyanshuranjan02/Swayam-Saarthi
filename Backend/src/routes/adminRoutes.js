@@ -7,7 +7,11 @@ import {
   getAdminAnalytics,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  getTopDrivers,
+  getLatestReviews,
+  getRecentPayments,
+  getSystemActivity,
 } from "../controllers/adminController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -76,6 +80,34 @@ router.put(
   "/change-password",
   authMiddleware,
   changePassword
+);
+
+router.get(
+  "/top-drivers",
+  authMiddleware,
+  roleMiddleware("admin"),
+  getTopDrivers
+);
+
+router.get(
+  "/reviews",
+  authMiddleware,
+  roleMiddleware("admin"),
+  getLatestReviews
+);
+
+router.get(
+  "/payments",
+  authMiddleware,
+  roleMiddleware("admin"),
+  getRecentPayments
+);
+
+router.get(
+  "/activity",
+  authMiddleware,
+  roleMiddleware("admin"),
+  getSystemActivity
 );
 
 export default router;

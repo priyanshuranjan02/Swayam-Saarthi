@@ -1,6 +1,5 @@
 import Booking from "../models/Booking.js";
 import Driver from "../models/Driver.js";
-import calculateFare from "../utils/calculateFare.js";
 import { successResponse, errorResponse } from "../utils/responseHelper.js";
 import {
   notifyUser,
@@ -9,7 +8,15 @@ import {
 } from "../utils/socketEmit.js";
 
 import { SOCKET_EVENTS } from "../utils/socketEvents.js";
+import {
+  createNotification,
+} from "../services/notificationService.js";
 
+/**
+ * =========================
+ * CREATE BOOKING (STEP 1)
+ * =========================
+ */
 /**
  * =========================
  * CREATE BOOKING (STEP 1)
@@ -17,31 +24,66 @@ import { SOCKET_EVENTS } from "../utils/socketEvents.js";
  */
 export const createBooking = async (req, res) => {
   try {
+
     if (!req.user?.id || req.user.role !== "user") {
       return errorResponse(res, "Unauthorized", 401);
     }
 
-    const { pickup, drop } = req.body;
-    if (!pickup || !drop) {
-      return errorResponse(res, "Pickup and drop are required", 400);
-    }
+    const {
+      pickup,
+      drop,
+      pickupLocation,
+      dropLocation,
+      routeDistance,
+      routeDuration,
+      fare,
+    } = req.body;
 
-    const distance = Math.floor(Math.random() * 10) + 2;
-    const fare = calculateFare(distance);
+    if (!pickup || !drop) {
+      return errorResponse(
+        res,
+        "Pickup and drop are required",
+        400
+      );
+    }
 
     const booking = await Booking.create({
       userId: req.user.id,
-      pickupLocation: pickup,
-      dropLocation: drop,
-      distance,
+
+      pickup,
+      drop,
+
+      pickupLocation,
+      dropLocation,
+
+      routeDistance,
+      routeDuration,
+
       fare,
+
       status: "pending",
     });
 
-    return successResponse(res, "Booking created", booking, 201);
+    return successResponse(
+      res,
+      "Booking created",
+      booking,
+      201
+    );
+
   } catch (err) {
-    console.error("CREATE BOOKING ERROR:", err);
-    return errorResponse(res, "Server error", 500);
+
+    console.error(
+      "CREATE BOOKING ERROR:",
+      err
+    );
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
+
   }
 };
 
@@ -55,7 +97,11 @@ export const getAvailableDrivers = async (req, res) => {
     const drivers = await Driver.find({
       isAvailable: true,
       isVerified: true,
-    }).select("-password");
+    })
+    .select("-password")
+    .select(
+      "name email averageRating totalReviews isVerified"
+    );
 
     return successResponse(res, "Available drivers fetched", drivers);
   } catch (err) {
@@ -100,6 +146,21 @@ export const assignDriver = async (req, res) => {
     booking.status = "pending";
     await booking.save();
 
+    await createNotification({
+      receiverId: driver._id,
+      receiverRole: "Driver",
+
+      title: "New Booking Request",
+
+      message: `${req.user.name} requested a ride.`,
+
+      type: "booking",
+
+      data: {
+        bookingId: booking._id,
+      },
+    });
+
     driver.isAvailable = false;
     await driver.save();
 
@@ -109,8 +170,8 @@ export const assignDriver = async (req, res) => {
       SOCKET_EVENTS.BOOKING_NEW,
       {
         bookingId: booking._id,
-        pickup: booking.pickupLocation,
-        drop: booking.dropLocation,
+        pickup: booking.pickupLocation?.name || booking.pickup,
+        drop: booking.dropLocation?.name || booking.drop,
         fare: booking.fare,
       }
     );
@@ -168,24 +229,55 @@ export const driverAcceptBooking = async (req, res) => {
       return errorResponse(res, "Booking not found", 404);
     }
 
+    // Update booking status
     booking.status = "accepted";
-
     await booking.save();
 
+    // Create notification for user
+    await createNotification({
+      receiverId: booking.userId,
+      receiverRole: "User",
+
+      title: "Driver Accepted",
+
+      message: `${req.user.name} accepted your booking.`,
+
+      type: "ride",
+
+      data: {
+        bookingId: booking._id,
+      },
+    });
+
+    // Notify user via socket
     notifyUser(
       booking.userId,
       SOCKET_EVENTS.BOOKING_ACCEPTED,
       {
-          bookingId: booking._id,
-          status: "accepted",
-          message: "Driver accepted your booking."
+        bookingId: booking._id.toString(),
+        status: "accepted",
+        message: "Driver accepted your booking.",
       }
     );
 
-    return successResponse(res, "Booking accepted", booking);
+    console.log(
+      "✅ BOOKING_ACCEPTED emitted to user:",
+      booking.userId.toString()
+    );
+
+    return successResponse(
+      res,
+      "Booking accepted",
+      booking
+    );
+
   } catch (err) {
     console.error("ACCEPT BOOKING ERROR:", err);
-    return errorResponse(res, "Server error", 500);
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
   }
 };
 
@@ -259,6 +351,14 @@ export const completeBooking = async (req, res) => {
         isAvailable: true,
       });
     }
+
+
+    console.log("================================");
+    console.log("RIDE COMPLETED");
+    console.log("User Room :", booking.userId.toString());
+    console.log("Booking   :", booking._id.toString());
+    console.log("================================");
+
 
     // 🔔 Notify everyone (admin/user refresh)
     notifyUser(
@@ -376,6 +476,10 @@ export const completeRide = async (req, res) => {
 
     await booking.save();
 
+    const updatedBooking = await Booking.findById(
+        booking._id
+    );
+
     await Driver.findByIdAndUpdate(
       req.user.id,
       {
@@ -384,13 +488,13 @@ export const completeRide = async (req, res) => {
     );
 
     notifyUser(
-      booking.userId,
-      SOCKET_EVENTS.RIDE_COMPLETED,
-      {
-        bookingId: booking._id,
-        status: "completed",
-        message: "Ride completed successfully.",
-      }
+        booking.userId,
+        SOCKET_EVENTS.RIDE_COMPLETED,
+{
+            bookingId: updatedBooking._id.toString(),
+            status: updatedBooking.status,
+            message: "Ride completed successfully.",
+        }
     );
 
     return successResponse(
@@ -403,4 +507,53 @@ export const completeRide = async (req, res) => {
     console.error("COMPLETE RIDE ERROR:", err);
     return errorResponse(res, "Server error", 500);
   }
+};
+
+
+export const updateDriverLocation = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+
+        const {
+            latitude,
+            longitude,
+        } = req.body;
+
+        const booking =
+            await Booking.findById(
+                bookingId
+            );
+
+        if (!booking) {
+            return errorResponse(
+                res,
+                "Booking not found",
+                404
+            );
+        }
+
+        booking.driverCurrentLocation = {
+            lat: latitude,
+            lng: longitude,
+            updatedAt: new Date(),
+        };
+
+        await booking.save();
+
+        return successResponse(
+            res,
+            "Location updated"
+        );
+    } catch (err) {
+        console.error(
+            "UPDATE LOCATION ERROR",
+            err
+        );
+
+        return errorResponse(
+            res,
+            "Server Error",
+            500
+        );
+    }
 };

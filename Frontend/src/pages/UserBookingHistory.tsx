@@ -1,15 +1,24 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, IndianRupee, Loader2 } from "lucide-react";
+import {
+  MapPin,
+  Clock,
+  IndianRupee,
+  Loader2,
+  Receipt,
+} from "lucide-react";
 import PageLayout from "@/components/layout/PageLayout";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { LocationResult } from "@/components/location/types";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 /* ================= TYPES ================= */
 interface Booking {
   _id: string;
-  pickupLocation: string;
-  dropLocation: string;
+  pickupLocation: LocationResult;
+  dropLocation: LocationResult;
   fare: number;
   status: string;
   createdAt: string;
@@ -86,7 +95,7 @@ const UserBookingHistory = () => {
 
                   <div>
                     <p className="font-medium">
-                      {booking.pickupLocation} → {booking.dropLocation}
+                      {booking.pickupLocation?.name} → {booking.dropLocation?.name}
                     </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                       <Clock className="h-3 w-3" />
@@ -102,9 +111,9 @@ const UserBookingHistory = () => {
                 </div>
 
                 {/* RIGHT */}
-                <div className="text-right">
+                <div className="flex flex-col items-end gap-3">
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-2 ${
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                       booking.status === "completed"
                         ? "badge-verified"
                         : booking.status === "ongoing"
@@ -114,11 +123,24 @@ const UserBookingHistory = () => {
                   >
                     {booking.status}
                   </span>
-
-                  <div className="flex items-center justify-end gap-1 text-lg font-semibold">
+                  
+                  <div className="flex items-center gap-1 text-lg font-semibold">
                     <IndianRupee className="h-4 w-4" />
                     {booking.fare}
                   </div>
+                  
+                  {booking.status === "completed" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                    >
+                      <Link to={`/receipt/${booking._id}`}>
+                        <Receipt className="h-4 w-4 mr-2" />
+                        View Receipt
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </motion.div>
             ))}

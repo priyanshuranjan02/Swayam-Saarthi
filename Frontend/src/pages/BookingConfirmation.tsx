@@ -13,13 +13,19 @@ import StepIndicator from "@/components/booking/StepIndicator";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import socket from "@/lib/socket";
+import { LocationResult } from "@/components/location/types";
 
 /* ================= TYPES ================= */
 interface Booking {
-  pickupLocation: string;
-  dropLocation: string;
+  pickupLocation: LocationResult;
+  dropLocation: LocationResult;
+
+  routeDistance?: number;
+  routeDuration?: number;
+
   fare: number;
   status: string;
+
   driverId?: {
     name: string;
     email: string;
@@ -152,7 +158,7 @@ const BookingConfirmation = () => {
                   <div>
                     <p className="text-xs text-muted-foreground">Pickup</p>
                     <p className="font-medium">
-                      {booking.pickupLocation}
+                      {booking.pickupLocation?.name}
                     </p>
                   </div>
                 </div>
@@ -166,7 +172,7 @@ const BookingConfirmation = () => {
                   <div>
                     <p className="text-xs text-muted-foreground">Drop</p>
                     <p className="font-medium">
-                      {booking.dropLocation}
+                      {booking.dropLocation?.name}
                     </p>
                   </div>
                 </div>
@@ -193,19 +199,58 @@ const BookingConfirmation = () => {
               </>
             )}
 
-            {/* FARE */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <IndianRupee className="h-5 w-5 text-primary" />
-                </div>
+            {/* TRIP SUMMARY */}
+
+            <div className="space-y-4">
+
+              <div className="flex items-center justify-between">
+
                 <span className="text-muted-foreground">
-                  Estimated Fare
+                  Distance
                 </span>
+
+                <span className="font-semibold">
+                  {booking.routeDistance?.toFixed(1)} km
+                </span>
+
               </div>
-              <span className="text-2xl font-bold gradient-text">
-                ₹{booking.fare}
-              </span>
+
+              <div className="flex items-center justify-between">
+
+                <span className="text-muted-foreground">
+                  Estimated Time
+                </span>
+
+                <span className="font-semibold">
+                  {Math.round(booking.routeDuration ?? 0)} mins
+                </span>
+
+              </div>
+
+              <div className="h-px bg-border" />
+
+              <div className="flex items-center justify-between">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+
+                    <IndianRupee className="h-5 w-5 text-primary" />
+
+                  </div>
+
+                  <span className="text-muted-foreground">
+                    Estimated Fare
+                  </span>
+
+                </div>
+
+                <span className="text-2xl font-bold gradient-text">
+                  ₹{booking.fare}
+                </span>
+
+              </div>
+
             </div>
           </div>
 

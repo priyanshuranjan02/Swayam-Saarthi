@@ -37,6 +37,16 @@ const driverSchema = new mongoose.Schema(
       default: false,
     },
 
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+
     currentLocation: {
       latitude: Number,
       longitude: Number,

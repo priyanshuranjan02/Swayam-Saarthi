@@ -4,6 +4,8 @@ import User from "../models/User.js";
 import { successResponse, errorResponse } from "../utils/responseHelper.js";
 import Admin from "../models/Admin.js";
 import { hashPassword, comparePassword } from "../utils/hashPassword.js";
+import Review from "../models/Review.js";
+import Payment from "../models/Payment.js";
 
 /**
  * =========================
@@ -76,7 +78,7 @@ export const getAllBookings = async (req, res) => {
 
 /**
  * =========================
- * ADMIN STATS (CARDS)
+ * ADMIN STATS (ENHANCED KPI CARDS)
  * =========================
  */
 export const getAdminStats = async (req, res) => {
@@ -85,31 +87,150 @@ export const getAdminStats = async (req, res) => {
       return errorResponse(res, "Unauthorized", 401);
     }
 
-    const totalUsers = await User.countDocuments({ role: "user" });
-    const totalDrivers = await Driver.countDocuments();
-    const totalBookings = await Booking.countDocuments();
+    const today = new Date();
 
-    const revenueResult = await Booking.aggregate([
-      { $match: { status: "completed" } },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: "$fare" },
-        },
-      },
-    ]);
+    const startOfToday = new Date(today);
+    startOfToday.setHours(0, 0, 0, 0);
 
-    const totalRevenue = revenueResult[0]?.totalRevenue || 0;
+    const startOfMonth = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
 
-    return successResponse(res, "Admin stats fetched", {
-      users: totalUsers,
-      drivers: totalDrivers,
-      bookings: totalBookings,
-      revenue: totalRevenue,
+    // =========================
+    // TOTAL COUNTS
+    // =========================
+
+    const totalUsers = await User.countDocuments({
+      role: "user",
     });
+
+    const totalDrivers =
+      await Driver.countDocuments();
+
+    const totalBookings =
+      await Booking.countDocuments();
+
+    // =========================
+    // NEW USERS THIS MONTH
+    // =========================
+
+    const newUsersThisMonth =
+      await User.countDocuments({
+        role: "user",
+        createdAt: {
+          $gte: startOfMonth,
+        },
+      });
+
+    // =========================
+    // ONLINE DRIVERS
+    // =========================
+
+    const onlineDrivers =
+      await Driver.countDocuments({
+        isAvailable: true,
+      });
+
+    // =========================
+    // TODAY BOOKINGS
+    // =========================
+
+    const todayBookings =
+      await Booking.countDocuments({
+        createdAt: {
+          $gte: startOfToday,
+        },
+      });
+
+    // =========================
+    // TOTAL REVENUE
+    // =========================
+
+    const revenueResult =
+      await Booking.aggregate([
+        {
+          $match: {
+            status: "completed",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: {
+              $sum: "$fare",
+            },
+          },
+        },
+      ]);
+
+    const totalRevenue =
+      revenueResult[0]?.totalRevenue || 0;
+
+    // =========================
+    // TODAY REVENUE
+    // =========================
+
+    const todayRevenueResult =
+      await Booking.aggregate([
+        {
+          $match: {
+            status: "completed",
+            createdAt: {
+              $gte: startOfToday,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: {
+              $sum: "$fare",
+            },
+          },
+        },
+      ]);
+
+    const todayRevenue =
+      todayRevenueResult[0]?.totalRevenue || 0;
+
+    // =========================
+    // RESPONSE
+    // =========================
+
+    return successResponse(
+      res,
+      "Admin stats fetched",
+      {
+        users: totalUsers,
+
+        drivers: totalDrivers,
+
+        bookings: totalBookings,
+
+        revenue: totalRevenue,
+
+        newUsersThisMonth,
+
+        onlineDrivers,
+
+        todayBookings,
+
+        todayRevenue,
+      }
+    );
   } catch (error) {
-    console.error("ADMIN STATS ERROR:", error);
-    return errorResponse(res, "Server error", 500);
+    console.error(
+      "ADMIN STATS ERROR:",
+      error
+    );
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
   }
 };
 
@@ -165,13 +286,310 @@ export const getAdminAnalytics = async (req, res) => {
       },
     ]);
 
-    return successResponse(res, "Admin analytics fetched", {
-      dailyRevenue,
-      dailyBookings,
-    });
+    // =========================
+    // 🥧 Booking Status Distribution
+    // =========================
+
+    const bookingStatus = await Booking.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          status: "$_id",
+          count: 1,
+        },
+      },
+    ]);
+
+    return successResponse(
+      res,
+      "Admin analytics fetched",
+      {
+        dailyRevenue,
+        dailyBookings,
+        bookingStatus,
+      }
+    );
   } catch (error) {
     console.error("ADMIN ANALYTICS ERROR:", error);
     return errorResponse(res, "Server error", 500);
+  }
+};
+
+/**
+ * =========================
+ * 🏆 TOP DRIVERS LEADERBOARD
+ * =========================
+ */
+export const getTopDrivers = async (req, res) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return errorResponse(res, "Unauthorized", 401);
+    }
+
+    const topDrivers = await Driver.aggregate([
+      {
+        $lookup: {
+          from: "bookings",
+          localField: "_id",
+          foreignField: "driverId",
+          as: "bookings",
+        },
+      },
+
+      {
+        $lookup: {
+          from: "reviews",
+          localField: "_id",
+          foreignField: "driverId",
+          as: "reviews",
+        },
+      },
+
+      {
+        $project: {
+          name: 1,
+          email: 1,
+
+          completedTrips: {
+            $size: {
+              $filter: {
+                input: "$bookings",
+                as: "booking",
+                cond: {
+                  $eq: [
+                    "$$booking.status",
+                    "completed",
+                  ],
+                },
+              },
+            },
+          },
+
+          totalEarnings: {
+            $sum: "$bookings.fare",
+          },
+
+          averageRating: {
+            $ifNull: [
+              {
+                $avg: "$reviews.rating",
+              },
+              0,
+            ],
+          },
+        },
+      },
+
+      {
+        $sort: {
+          completedTrips: -1,
+          totalEarnings: -1,
+        },
+      },
+
+      {
+        $limit: 5,
+      },
+    ]);
+
+    return successResponse(
+      res,
+      "Top drivers fetched",
+      topDrivers
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
+  }
+};
+
+/**
+ * =========================
+ * ⭐ LATEST REVIEWS
+ * =========================
+ */
+export const getLatestReviews = async (req, res) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return errorResponse(res, "Unauthorized", 401);
+    }
+
+    const reviews = await Review.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("userId", "name")
+      .populate("driverId", "name");
+
+    return successResponse(
+      res,
+      "Latest reviews fetched",
+      reviews
+    );
+
+  } catch (error) {
+    console.error("LATEST REVIEWS ERROR:", error);
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
+  }
+};
+
+/**
+ * =========================
+ * 💳 RECENT PAYMENTS
+ * =========================
+ */
+export const getRecentPayments = async (req, res) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return errorResponse(res, "Unauthorized", 401);
+    }
+
+    const payments = await Payment.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("userId", "name")
+      .populate({
+        path: "bookingId",
+        populate: {
+          path: "driverId",
+          select: "name",
+        },
+      });
+
+    return successResponse(
+      res,
+      "Recent payments fetched",
+      payments
+    );
+
+  } catch (error) {
+    console.error(
+      "RECENT PAYMENTS ERROR:",
+      error
+    );
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
+  }
+};
+
+/**
+ * =========================
+ * 📡 SYSTEM ACTIVITY FEED
+ * =========================
+ */
+export const getSystemActivity = async (req, res) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return errorResponse(res, "Unauthorized", 401);
+    }
+
+    const bookings = await Booking.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("userId", "name")
+      .populate("driverId", "name");
+
+    const payments = await Payment.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("userId", "name");
+
+    const reviews = await Review.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("userId", "name")
+      .populate("driverId", "name");
+
+    const drivers = await Driver.find()
+      .sort({ updatedAt: -1 })
+      .limit(5);
+
+    const activities = [];
+
+    bookings.forEach((booking) => {
+      activities.push({
+        type: "booking",
+        message: `${booking.userId?.name ?? "User"} created a booking`,
+        createdAt: booking.createdAt,
+      });
+
+      if (booking.status === "completed") {
+        activities.push({
+          type: "ride",
+          message: `Ride completed by ${booking.driverId?.name ?? "Driver"}`,
+          createdAt: booking.updatedAt,
+        });
+      }
+    });
+
+    payments.forEach((payment) => {
+      activities.push({
+        type: "payment",
+        message: `₹${payment.amount} payment received`,
+        createdAt: payment.createdAt,
+      });
+    });
+
+    reviews.forEach((review) => {
+      activities.push({
+        type: "review",
+        message: `${review.userId?.name ?? "User"} rated ${review.driverId?.name ?? "Driver"} (${review.rating}★)`,
+        createdAt: review.createdAt,
+      });
+    });
+
+    drivers.forEach((driver) => {
+      activities.push({
+        type: "driver",
+        message: `${driver.name} is ${
+          driver.isAvailable ? "Online" : "Offline"
+        }`,
+        createdAt: driver.updatedAt,
+      });
+    });
+
+    activities.sort(
+      (a, b) =>
+        new Date(b.createdAt) -
+        new Date(a.createdAt)
+    );
+
+    return successResponse(
+      res,
+      "System activity fetched",
+      activities.slice(0, 15)
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
   }
 };
 
@@ -248,4 +666,3 @@ export const changePassword = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
-

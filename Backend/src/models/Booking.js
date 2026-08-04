@@ -13,16 +13,28 @@ const bookingSchema = new mongoose.Schema(
       ref: "Driver",
     },
 
-    pickupLocation: {
+    pickup: {
       type: String,
       required: true,
       trim: true,
     },
 
-    dropLocation: {
+    drop: {
       type: String,
       required: true,
       trim: true,
+    },
+
+    pickupLocation: {
+      name: String,
+      lat: Number,
+      lon: Number,
+    },
+
+    dropLocation: {
+      name: String,
+      lat: Number,
+      lon: Number,
     },
 
     distance: {
@@ -55,6 +67,38 @@ const bookingSchema = new mongoose.Schema(
 
     completedAt: {
       type: Date,
+    },
+
+    routeDistance: {
+        type: Number,
+        default: 0
+    },
+    
+    routeDuration: {
+        type: Number,
+        default: 0
+    },
+
+    driverCurrentLocation: {
+      lat: {
+        type: Number,
+        default: null,
+      },
+
+      lng: {
+        type: Number,
+        default: null,
+      },
+
+      updatedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+    
+    fare: {
+        type: Number,
+        default: 0
     },
   },
   { timestamps: true }

@@ -12,7 +12,9 @@ import {
   getProfile,
   updateProfile,
   changePassword,
-  startRide
+  startRide,
+  getDriverDashboard,
+  getWeeklyEarnings,
 } from "../controllers/driverController.js";
 
 const router = express.Router();
@@ -51,14 +53,14 @@ router.get(
   "/earnings",
   authMiddleware,
   roleMiddleware("driver"),
-  getDriverEarningsAnalytics
+  getDriverEarnings
 );
 
 router.get(
-  "/earnings",
+  "/earnings/analytics",
   authMiddleware,
   roleMiddleware("driver"),
-  getDriverEarnings
+  getDriverEarningsAnalytics
 );
 
 router.get(
@@ -87,6 +89,20 @@ router.patch(
   authMiddleware,
   roleMiddleware("driver"),
   startRide
+);
+
+router.get(
+    "/dashboard",
+    authMiddleware,
+    roleMiddleware("driver"),
+    getDriverDashboard
+);
+
+router.get(
+  "/weekly-earnings",
+  authMiddleware,
+  roleMiddleware("driver"),
+  getWeeklyEarnings
 );
 
 export default router;

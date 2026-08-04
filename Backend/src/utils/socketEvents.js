@@ -18,4 +18,6 @@ export const SOCKET_EVENTS = {
 
   RIDE_COMPLETED: "ride:completed",
 
+  DRIVER_LOCATION_UPDATE: "driver:location:update",
+
 };

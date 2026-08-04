@@ -20,7 +20,7 @@ const DriverCard = ({ driver, onSelect, isLoading }: DriverCardProps) => {
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <div className="h-16 w-16 rounded-full gradient-primary flex items-center justify-center text-2xl font-bold text-primary-foreground">
+          <div className="h-16 w-16 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center text-2xl font-bold text-white">
             {driver.name.charAt(0)}
           </div>
         </div>
@@ -37,15 +37,22 @@ const DriverCard = ({ driver, onSelect, isLoading }: DriverCardProps) => {
             )}
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-            <span className="flex items-center gap-1">
-              <Star className="h-4 w-4 text-primary fill-primary" />
-              {driver.rating.toFixed(1)}
-            </span>
-            <span className="flex items-center gap-1">
-              <Car className="h-4 w-4" />
-              {driver.trips.toLocaleString()} trips
-            </span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Star
+                className="h-4 w-4 text-yellow-400 fill-yellow-400"
+              />
+              <span className="font-semibold">
+                {driver.rating.toFixed(1)}
+              </span>
+              <span className="text-muted-foreground text-sm">
+                ({driver.trips} reviews)
+              </span>
+            </div>
+            <div className="text-green-500 text-sm font-medium flex items-center gap-1">
+              <Shield className="h-4 w-4" />
+              Trusted
+            </div>
           </div>
 
           <Button

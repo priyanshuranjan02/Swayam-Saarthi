@@ -15,8 +15,10 @@ interface Driver {
   _id: string;
   name: string;
   email: string;
-  rating?: number;
-  totalTrips?: number;
+
+  averageRating?: number;
+  totalReviews?: number;
+
   isVerified: boolean;
   isAvailable: boolean;
 }
@@ -122,12 +124,19 @@ const SelectDriver = () => {
                     driver={{
                       id: driver._id,
                       name: driver.name,
-                      rating: driver.rating || 4.5,
-                      trips: driver.totalTrips || 0,
+                    
+                      rating: driver.averageRating ?? 0,
+                    
+                      trips: driver.totalReviews ?? 0,
+                    
                       isVerified: driver.isVerified,
                     }}
-                    onSelect={() => handleSelectDriver(driver)}
-                    isLoading={selectingDriverId === driver._id}
+                    onSelect={() =>
+                      handleSelectDriver(driver)
+                    }
+                    isLoading={
+                      selectingDriverId === driver._id
+                    }
                   />
                 </motion.div>
               ))}

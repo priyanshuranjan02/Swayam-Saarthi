@@ -22,6 +22,7 @@ export default function NotificationBell() {
   const {
     notifications,
     unreadCount,
+    markAsRead,
     markAllAsRead,
   } = useNotifications();
 
@@ -111,13 +112,18 @@ export default function NotificationBell() {
             {notifications.map((notification) => (
 
               <div
-                key={notification.id}
+                key={notification._id}
+                onClick={() => 
+                  markAsRead(notification._id)
+                }
                 className={`
                   p-4
                   border-b
                   last:border-b-0
+                  cursor-pointer
+                  transition-colors
                   ${
-                    !notification.read
+                    !notification.isRead
                       ? "bg-primary/5"
                       : ""
                   }
@@ -125,9 +131,7 @@ export default function NotificationBell() {
               >
 
                 <p className="font-medium">
-
                   {notification.title}
-
                 </p>
 
                 <p
@@ -137,9 +141,7 @@ export default function NotificationBell() {
                     mt-1
                   "
                 >
-
                   {notification.message}
-
                 </p>
 
                 <p
@@ -150,7 +152,9 @@ export default function NotificationBell() {
                   "
                 >
 
-                  {notification.time}
+                  {new Date(
+                    notification.createdAt
+                  ).toLocaleString()}
 
                 </p>
 

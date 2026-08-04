@@ -4,12 +4,13 @@ import { MapPin, Clock, IndianRupee, Loader2, User } from "lucide-react";
 import PageLayout from "@/components/layout/PageLayout";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { LocationResult } from "@/components/location/types";
 
 /* ================= TYPES ================= */
 interface Booking {
   _id: string;
-  pickupLocation: string;
-  dropLocation: string;
+  pickupLocation: LocationResult;
+  dropLocation: LocationResult;
   fare: number;
   status: string;
   createdAt: string;
@@ -86,7 +87,7 @@ const DriverBookingHistory = () => {
 
                   <div>
                     <p className="font-medium">
-                      {booking.pickupLocation} → {booking.dropLocation}
+                      {booking.pickupLocation?.name} → {booking.dropLocation?.name}
                     </p>
 
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">

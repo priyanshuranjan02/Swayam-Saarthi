@@ -34,6 +34,8 @@ import UserBookingHistory from "./pages/UserBookingHistory";
 
 // ✅ Driver History (NEW)
 import DriverBookingHistory from "./pages/DriverBookingHistory";
+import RideCompleted from "./pages/RideCompleted";
+import Receipt from "./pages/Receipt";
 
 const queryClient = new QueryClient();
 
@@ -167,8 +169,18 @@ const App = () => (
                     }
                   />
                   <Route
-                      path="/track-ride"
+                      path="/track-ride/:bookingId"
                       element={<TrackRide />}
+                  />
+
+                  <Route
+                    path="/ride-completed/:bookingId"
+                    element={<RideCompleted />}
+                  />
+
+                  <Route
+                    path="/receipt/:bookingId"
+                    element={<Receipt />}
                   />
 
                   {/* Catch-all */}

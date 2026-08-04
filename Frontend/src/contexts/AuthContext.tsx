@@ -111,7 +111,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     socket.connect();
   }
 
-  socket.emit("join-room", user.id);
+  if (user?.id) {
+    socket.emit("join-room", {
+    id: user.id,
+    role: user.role,
+  });
+  }
   
   return () => {
     socket.off("booking:new");

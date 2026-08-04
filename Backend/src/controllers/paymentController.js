@@ -58,3 +58,70 @@ export const makePayment = async (req, res) => {
     return errorResponse(res, "Server error", 500);
   }
 };
+
+/**
+ * =========================
+ * GET RECEIPT
+ * =========================
+ */
+export const getReceipt = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const payment = await Payment.findOne({
+      bookingId,
+      status: "success",
+    });
+
+    if (!payment) {
+      return errorResponse(
+        res,
+        "Payment not found",
+        404
+      );
+    }
+
+    const booking = await Booking.findById(
+      bookingId
+    )
+      .populate(
+        "userId",
+        "name email phone"
+      )
+      .populate(
+        "driverId",
+        "name phone"
+      );
+
+    if (!booking) {
+      return errorResponse(
+        res,
+        "Booking not found",
+        404
+      );
+    }
+
+    return successResponse(
+      res,
+      "Receipt fetched",
+      {
+        booking,
+        payment,
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "GET RECEIPT ERROR:",
+      error
+    );
+
+    return errorResponse(
+      res,
+      "Server error",
+      500
+    );
+
+  }
+};
