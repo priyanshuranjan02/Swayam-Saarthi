@@ -15,6 +15,14 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 
 const app = express();
 
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Swayam Saarthi Backend is running 🚀",
+    version: "1.0.0",
+  });
+});
+
 /* =========================
    MIDDLEWARES
 ========================= */
