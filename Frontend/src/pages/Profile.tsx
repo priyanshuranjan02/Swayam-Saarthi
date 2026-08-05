@@ -17,6 +17,7 @@ interface ProfileData {
   email: string;
   phone?: string;
   role: string;
+  createdAt: string;
 }
 
 type PasswordInputProps = {
@@ -139,7 +140,7 @@ const Profile = () => {
             break;
         
           default:
-            endpoint = "/users/profile";
+            endpoint = "/user/profile";
         }
 
         const res = await api.get(endpoint);
@@ -176,7 +177,7 @@ const Profile = () => {
             break;
 
           default:
-            endpoint = "/users/profile";
+            endpoint = "/user/profile";
         }
 
         const res = await api.put(endpoint, formData);
@@ -232,7 +233,7 @@ const Profile = () => {
             break;
 
           default:
-            endpoint = "/users/change-password";
+            endpoint = "/user/change-password";
         }
 
         await api.put(endpoint, {
@@ -407,10 +408,15 @@ const Profile = () => {
               
                     <Calendar className="h-4 w-4" />
               
-                    <span>
-                      Member since{" "}
-                      {new Date().getFullYear()}
-                    </span>
+                    <p className="text-muted-foreground">
+                      Member Since{" "}
+                      {profile?.createdAt
+                        ? new Date(profile.createdAt).toLocaleDateString("en-US", {
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "—"}
+                    </p>
               
                   </div>
               

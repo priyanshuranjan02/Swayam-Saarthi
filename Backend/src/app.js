@@ -12,6 +12,7 @@ import errorMiddleware from "./middleware/errorMiddleware.js";
 import userRoutes from "./routes/userRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import publicRoutes from "./routes/publicRoutes.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/public", publicRoutes);
 
 /* =========================
    ERROR HANDLER (LAST)

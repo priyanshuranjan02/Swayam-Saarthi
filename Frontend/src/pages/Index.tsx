@@ -14,6 +14,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageLayout from '@/components/layout/PageLayout';
+import { useEffect, useState } from "react";
+import {
+  getLandingData,
+  type LandingData,
+} from "@/services/publicService";
+import { Card, CardContent } from '@/components/ui/card';
+import { AvatarFallback } from '@radix-ui/react-avatar';
+import { Avatar } from '@/components/ui/avatar';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 40 },
@@ -29,6 +37,8 @@ const stagger = {
 };
 
 const Index = () => {
+  const [landingData, setLandingData] = useState<LandingData | null>(null);
+
   const features = [
     {
       icon: Shield,
@@ -74,32 +84,45 @@ const Index = () => {
   ];
 
   const stats = [
-    { value: '10K+', label: 'Happy Users' },
-    { value: '5K+', label: 'Verified Drivers' },
-    { value: '50K+', label: 'Trips Completed' },
-    { value: '4.9', label: 'Average Rating' },
+    {
+      icon: Users,
+      value: landingData?.stats.users ?? "0+",
+      label: "Happy Users",
+    },
+    {
+      icon: Car,
+      value: landingData?.stats.drivers ?? "0+",
+      label: "Verified Drivers",
+    },
+    {
+      icon: MapPin,
+      value: landingData?.stats.trips ?? "0+",
+      label: "Trips Completed",
+    },
+    {
+      icon: Star,
+      value: landingData?.stats.rating ?? 0,
+      label: "Average Rating",
+    },
   ];
 
-  const testimonials = [
-    {
-      name: 'Ananya Rao',
-      role: 'Daily Commuter',
-      quote:
-        'Swayam Saarthi has completely changed how I travel. My own car, a professional driver — safe and stress-free every single day.',
-    },
-    {
-      name: 'Vikram Mehta',
-      role: 'Business Owner',
-      quote:
-        'Booking is effortless and the drivers are always punctual and courteous. It feels like having a personal chauffeur on demand.',
-    },
-    {
-      name: 'Priya Nair',
-      role: 'Verified Driver Partner',
-      quote:
-        'As a driver, the platform gives me flexible work and consistent bookings. Payments are always on time and transparent.',
-    },
-  ];
+  const testimonials = landingData?.testimonials || [];
+
+  useEffect(() => {
+    const fetchLandingData = async () => {
+      try {
+        const data = await getLandingData();
+        setLandingData(data);
+      } catch (error) {
+        console.error(
+          "Failed to load landing page data:",
+          error
+        );
+      }
+    };
+
+    fetchLandingData();
+  }, []);
 
   return (
     <PageLayout>
@@ -340,12 +363,16 @@ const Index = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-xl font-semibold truncate">Join Our Community</h3>
-                  <p className="text-sm text-muted-foreground">10,000+ satisfied users</p>
+                  <p className="text-sm text-muted-foreground">
+                    {landingData
+                      ? `${landingData.stats.users} satisfied users`
+                      : "Loading..."}
+                  </p>
                 </div>
               </div>
               <p className="text-muted-foreground mb-6">
-                Join thousands of users who trust Swayam Saarthi for their driving needs.
-                Experience the convenience and safety of our platform.
+                Join our growing community of verified riders and professional drivers.
+                Experience safe, reliable and convenient travel with Swayam Saarthi.
               </p>
               <Link to="/register/user">
                 <Button variant="hero" className="w-full gap-2">
@@ -379,32 +406,62 @@ const Index = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((t, index) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="glass-card-hover p-6 flex flex-col h-full"
-              >
-                <div className="flex gap-1 mb-4 text-warning">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
-                <p className="text-foreground/90 mb-6 grow">&ldquo;{t.quote}&rdquo;</p>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-semibold shrink-0">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-semibold truncate">{t.name}</div>
-                    <div className="text-xs text-muted-foreground truncate">{t.role}</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+            {testimonials.length > 0 ? (
+              testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={testimonial._id}
+                  variants={fadeInUp}
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <Card className="h-full rounded-3xl border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300">
+                    <CardContent className="p-6">
+              
+                      {/* Rating */}
+                      <div className="flex mb-4">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Review */}
+                      <p className="text-muted-foreground italic mb-6">
+                        "{testimonial.review}"
+                      </p>
+                      
+                      {/* User */}
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback>
+                            {testimonial.user?.fullname?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      
+                        <div>
+                          <h4 className="font-semibold">
+                            {testimonial.user?.fullname || "Anonymous"}
+                          </h4>
+                      
+                          <p className="text-sm text-muted-foreground">
+                            Driver: {testimonial.driver?.fullname || "N/A"}
+                          </p>
+                        </div>
+                      </div>
+                      
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-16">
+                <p className="text-muted-foreground">
+                  No customer reviews available yet.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
