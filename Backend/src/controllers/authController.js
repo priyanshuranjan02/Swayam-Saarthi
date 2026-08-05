@@ -81,15 +81,21 @@ export const registerDriver = async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const driver = await Driver.create({
+    const driverData = {
       name,
       email,
       password: hashedPassword,
-      phone: phone || null,
-      role: "driver",          // 🔥 IMPORTANT
-      isVerified: true,        // for now
-      isAvailable: false
-    });
+      role: "driver",
+      isVerified: true,
+      isAvailable: false,
+    };
+    
+    // Only include phone if it was provided
+    if (phone && phone.trim() !== "") {
+      driverData.phone = phone.trim();
+    }
+
+    const driver = await Driver.create(driverData);
 
     const token = generateToken(driver._id, driver.role);
 
