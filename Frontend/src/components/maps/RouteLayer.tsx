@@ -44,7 +44,7 @@ export default function RouteLayer({
 
       routeWhileDragging: false,
 
-    }).addTo(map);
+    } as any).addTo(map);
 
     return () => {
 

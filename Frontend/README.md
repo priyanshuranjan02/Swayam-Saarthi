@@ -1,35 +1,29 @@
-# Welcome to End-to-End Product Project
+# Welcome to your Lovable project
 
-## Project info
+This project was built with [Lovable](https://lovable.dev).
 
-**URL**: 
+## Build with Lovable
 
-## How can I edit this code?
+Open your project in the [Lovable editor](https://lovable.dev) and keep building.
 
-Follow these steps:
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
+- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+git clone <this-repository-url>
+cd <repository-name>
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
-## What technologies are used for this project?
+## Built with
 
-This project is built with:
-
-- Vite
+- TanStack Start
 - TypeScript
 - React
-- shadcn-ui
 - Tailwind CSS
-
-Yes, you can!

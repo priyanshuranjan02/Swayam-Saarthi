@@ -1,6 +1,17 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Car, Clock, CheckCircle2, Users, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  Shield,
+  Car,
+  Clock,
+  CheckCircle2,
+  Users,
+  Zap,
+  Star,
+  Sparkles,
+  MapPin,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageLayout from '@/components/layout/PageLayout';
 
@@ -46,16 +57,19 @@ const Index = () => {
       number: '01',
       title: 'Enter Trip Details',
       description: 'Tell us your pickup and drop locations for the journey.',
+      icon: MapPin,
     },
     {
       number: '02',
       title: 'Choose Your Driver',
       description: 'Browse verified drivers and select the one you prefer.',
+      icon: Users,
     },
     {
       number: '03',
       title: 'Confirm & Pay',
       description: 'Review your booking, confirm, and pay securely.',
+      icon: CheckCircle2,
     },
   ];
 
@@ -66,14 +80,44 @@ const Index = () => {
     { value: '4.9', label: 'Average Rating' },
   ];
 
+  const testimonials = [
+    {
+      name: 'Ananya Rao',
+      role: 'Daily Commuter',
+      quote:
+        'Swayam Saarthi has completely changed how I travel. My own car, a professional driver — safe and stress-free every single day.',
+    },
+    {
+      name: 'Vikram Mehta',
+      role: 'Business Owner',
+      quote:
+        'Booking is effortless and the drivers are always punctual and courteous. It feels like having a personal chauffeur on demand.',
+    },
+    {
+      name: 'Priya Nair',
+      role: 'Verified Driver Partner',
+      quote:
+        'As a driver, the platform gives me flexible work and consistent bookings. Payments are always on time and transparent.',
+    },
+  ];
+
   return (
     <PageLayout>
       {/* Hero Section */}
       <section className="relative overflow-hidden section-container pt-20 md:pt-32">
         {/* Background Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute -top-24 left-1/4 w-[28rem] h-[28rem] bg-primary/15 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-[26rem] h-[26rem] bg-accent/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)',
+              backgroundSize: '32px 32px',
+            }}
+          />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -85,14 +129,14 @@ const Index = () => {
           >
             <motion.div variants={fadeInUp} className="mb-6">
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                <Zap className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 Reverse Ride-Hailing Platform
               </span>
             </motion.div>
 
             <motion.h1
               variants={fadeInUp}
-              className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight"
+              className="font-display text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
             >
               Your Car.{' '}
               <span className="gradient-text">Our Driver.</span>
@@ -102,7 +146,7 @@ const Index = () => {
               variants={fadeInUp}
               className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
             >
-              Book verified, professional drivers for your own vehicle. Whether it's a 
+              Book verified, professional drivers for your own vehicle. Whether it's a
               daily commute or a special trip, we've got you covered.
             </motion.p>
 
@@ -127,16 +171,17 @@ const Index = () => {
           {/* Stats */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
           >
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="glass-card p-6 text-center"
+                className="glass-card-hover p-6 text-center"
               >
-                <div className="text-3xl md:text-4xl font-bold gradient-text mb-1">
+                <div className="text-3xl md:text-4xl font-bold gradient-text mb-1 font-display">
                   {stat.value}
                 </div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
@@ -153,13 +198,16 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-16 max-w-2xl mx-auto"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold uppercase tracking-wide mb-4">
+              Why Us
+            </span>
+            <h2 className="section-title text-3xl md:text-4xl mb-4">
               Why Choose <span className="gradient-text">Swayam Saarthi</span>?
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Experience the convenience of having a professional driver for your own vehicle, 
+            <p className="text-muted-foreground">
+              Experience the convenience of having a professional driver for your own vehicle,
               with complete safety and flexibility.
             </p>
           </motion.div>
@@ -172,9 +220,10 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="glass-card-hover p-6 text-center"
+                whileHover={{ y: -4 }}
+                className="glass-card-hover p-6 text-center group"
               >
-                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary mb-4">
+                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary mb-4 shadow-soft transition-transform duration-300 group-hover:scale-110">
                   <feature.icon className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
@@ -186,23 +235,27 @@ const Index = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="section-container bg-card/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="section-container relative overflow-hidden">
+        <div className="absolute inset-0 gradient-surface pointer-events-none" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-16 max-w-2xl mx-auto"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold uppercase tracking-wide mb-4">
+              Simple Process
+            </span>
+            <h2 className="section-title text-3xl md:text-4xl mb-4">
               How It <span className="gradient-text">Works</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-muted-foreground">
               Book a driver in three simple steps
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
             {steps.map((step, index) => (
               <motion.div
                 key={step.number}
@@ -212,18 +265,23 @@ const Index = () => {
                 transition={{ delay: index * 0.15 }}
                 className="relative"
               >
-                <div className="glass-card p-8 text-center h-full">
-                  <div className="text-6xl font-bold gradient-text opacity-20 mb-4">
-                    {step.number}
+                <div className="glass-card p-8 text-center h-full flex flex-col items-center">
+                  <div className="relative mb-6">
+                    <div className="h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center shadow-soft">
+                      <step.icon className="h-8 w-8 text-primary-foreground" />
+                    </div>
+                    <span className="absolute -top-3 -right-3 h-7 w-7 rounded-full bg-card border border-border flex items-center justify-center text-xs font-bold text-primary">
+                      {step.number}
+                    </span>
                   </div>
                   <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
                   <p className="text-muted-foreground">{step.description}</p>
                 </div>
-                
+
                 {/* Connector Arrow */}
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                    <ArrowRight className="h-8 w-8 text-primary/50" />
+                  <div className="hidden md:flex items-center justify-center absolute top-1/2 -right-7 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-card border border-border shadow-soft">
+                    <ArrowRight className="h-4 w-4 text-primary" />
                   </div>
                 )}
               </motion.div>
@@ -241,20 +299,20 @@ const Index = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="section-title text-3xl md:text-4xl mb-6">
                 About <span className="gradient-text">Swayam Saarthi</span>
               </h2>
               <p className="text-muted-foreground mb-6">
-                Swayam Saarthi is a revolutionary platform that connects vehicle owners with 
-                verified, professional drivers. Unlike traditional ride-hailing services where 
+                Swayam Saarthi is a revolutionary platform that connects vehicle owners with
+                verified, professional drivers. Unlike traditional ride-hailing services where
                 you book a car, we provide skilled drivers for your own vehicle.
               </p>
               <p className="text-muted-foreground mb-8">
-                Whether you need a driver for daily commutes, long trips, or special occasions, 
-                our platform ensures you get reliable, background-verified professionals who 
+                Whether you need a driver for daily commutes, long trips, or special occasions,
+                our platform ensures you get reliable, background-verified professionals who
                 treat your vehicle with care.
               </p>
-              
+
               <div className="space-y-4">
                 {[
                   'All drivers are thoroughly verified',
@@ -263,7 +321,7 @@ const Index = () => {
                   'Real-time trip tracking',
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                     <span>{item}</span>
                   </div>
                 ))}
@@ -277,16 +335,16 @@ const Index = () => {
               className="glass-card p-8"
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="h-14 w-14 rounded-2xl gradient-primary flex items-center justify-center">
+                <div className="h-14 w-14 rounded-2xl gradient-primary flex items-center justify-center shadow-soft shrink-0">
                   <Users className="h-7 w-7 text-primary-foreground" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold">Join Our Community</h3>
+                <div className="min-w-0">
+                  <h3 className="text-xl font-semibold truncate">Join Our Community</h3>
                   <p className="text-sm text-muted-foreground">10,000+ satisfied users</p>
                 </div>
               </div>
               <p className="text-muted-foreground mb-6">
-                Join thousands of users who trust Swayam Saarthi for their driving needs. 
+                Join thousands of users who trust Swayam Saarthi for their driving needs.
                 Experience the convenience and safety of our platform.
               </p>
               <Link to="/register/user">
@@ -300,6 +358,57 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="section-container">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16 max-w-2xl mx-auto"
+          >
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold uppercase tracking-wide mb-4">
+              Testimonials
+            </span>
+            <h2 className="section-title text-3xl md:text-4xl mb-4">
+              Loved by <span className="gradient-text">Riders &amp; Drivers</span>
+            </h2>
+            <p className="text-muted-foreground">
+              Real stories from people who use Swayam Saarthi every day.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((t, index) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="glass-card-hover p-6 flex flex-col h-full"
+              >
+                <div className="flex gap-1 mb-4 text-warning">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-foreground/90 mb-6 grow">&ldquo;{t.quote}&rdquo;</p>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-semibold shrink-0">
+                    {t.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-semibold truncate">{t.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">{t.role}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="section-container">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -307,25 +416,31 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="glass-card p-12 text-center relative overflow-hidden"
+            className="glass-card p-10 md:p-14 text-center relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent pointer-events-none" />
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <div className="absolute inset-0 gradient-primary opacity-90 pointer-events-none" />
+            <div className="absolute -top-16 -left-16 w-64 h-64 bg-primary-foreground/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-primary-foreground/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 text-primary-foreground">
+              <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
                 Ready to Get Started?
               </h2>
-              <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+              <p className="mb-8 max-w-xl mx-auto opacity-90">
                 Join Swayam Saarthi today and experience the future of personal transportation.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link to="/register/user">
-                  <Button variant="hero" size="lg" className="gap-2">
+                  <Button variant="secondary" size="lg" className="gap-2">
                     Book a Driver
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link to="/register/driver">
-                  <Button variant="hero-outline" size="lg">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
+                  >
                     Join as Driver
                   </Button>
                 </Link>

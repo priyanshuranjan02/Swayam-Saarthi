@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Clock, MapPin, ArrowRight, List } from "lucide-react";
+import { Plus, ArrowRight, List, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import PageLayout from "@/components/layout/PageLayout";
@@ -90,14 +90,26 @@ const UserDashboard = () => {
           className="max-w-5xl mx-auto"
         >
           {/* Welcome Section */}
-          <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
-              Welcome back,{" "}
-              <span className="gradient-text">{user?.name}</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Ready to book a driver for your journey?
-            </p>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-3">
+                <Sparkles className="h-3.5 w-3.5" />
+                Welcome back
+              </span>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+                Hey, <span className="gradient-text">{user?.name}</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Ready to book a driver for your journey?
+              </p>
+            </div>
+
+            <Link to="/create-booking" className="hidden sm:block">
+              <Button variant="hero" size="lg" className="gap-2">
+                <Plus className="h-5 w-5" />
+                New Booking
+              </Button>
+            </Link>
           </div>
 
           {/* ================= CURRENT RIDE ================= */}
@@ -121,20 +133,24 @@ const UserDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="glass-card p-8 mb-8"
+              className="relative overflow-hidden glass-card p-8 mb-8"
             >
-              <div className="flex flex-col lg:flex-row gap-8 lg:items-center">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full gradient-primary opacity-10 blur-3xl" />
+              <div className="relative flex flex-col lg:flex-row gap-8 lg:items-center">
                 <div className="flex-1">
-          
+                  <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow mb-4">
+                    <Plus className="h-6 w-6 text-primary-foreground" />
+                  </div>
+
                   <h2 className="text-2xl font-bold mb-3">
                     Create a New Booking
                   </h2>
-          
+
                   <p className="text-muted-foreground mb-6">
                     Book a verified driver for your vehicle in just 3 simple
                     steps.
                   </p>
-          
+
                   <Link to="/create-booking">
                     <Button
                       variant="hero"
@@ -142,13 +158,13 @@ const UserDashboard = () => {
                       className="w-full sm:w-auto gap-2"
                     >
                       <Plus className="h-5 w-5" />
-          
+
                       Create Booking
-          
+
                       <ArrowRight className="h-5 w-5" />
                     </Button>
                   </Link>
-          
+
                 </div>
               </div>
             </motion.div>
@@ -173,10 +189,10 @@ const UserDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="glass-card p-6 flex flex-col sm:flex-row gap-5 sm:items-center sm:justify-between"
+            className="glass-card-hover p-6 flex flex-col sm:flex-row gap-5 sm:items-center sm:justify-between"
           >
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                 <List className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -193,11 +209,6 @@ const UserDashboard = () => {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            {/* <Link to="/track-ride">
-              <Button>
-                Track Ride
-              </Button>
-            </Link> */}
           </motion.div>
         </motion.div>
       </div>

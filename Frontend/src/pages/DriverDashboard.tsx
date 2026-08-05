@@ -7,7 +7,10 @@ import {
   XCircle,
   List,
   IndianRupee,
-  TrendingUp
+  TrendingUp,
+  Car,
+  Star,
+  ArrowRight,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import PageLayout from "@/components/layout/PageLayout";
@@ -45,11 +48,6 @@ interface Booking {
   };
 }
 
-// interface EarningsDay {
-//   date: string;
-//   amount: number;
-// }
-
 interface DriverStats {
   todayEarnings: number;
 
@@ -63,6 +61,21 @@ interface DriverStats {
 
   totalReviews: number;
 }
+
+const activeBookingBadge = (status?: string) => {
+  switch (status) {
+    case "pending":
+      return "bg-warning/15 text-warning border border-warning/30";
+    case "accepted":
+      return "bg-primary/15 text-primary border border-primary/30";
+    case "confirmed":
+      return "bg-success/15 text-success border border-success/30";
+    case "ongoing":
+      return "bg-primary/15 text-primary border border-primary/30";
+    default:
+      return "bg-secondary text-secondary-foreground border border-border";
+  }
+};
 
 const DriverDashboard = () => {
   const [profile, setProfile] = useState<DriverProfile | null>(null);
@@ -90,26 +103,6 @@ const fetchDriverData = async () => {
         api.get("/driver/dashboard"),
         api.get("/driver/weekly-earnings"),
       ]);
-
-    // /* PROFILE */
-    // const driver = profileRes.data.data;
-    // setProfile(driver);
-    // setIsOnline(driver.isAvailable);
-
-    // /* ACTIVE BOOKING */
-    // setActiveBooking(activeRes.data.data || null);
-
-    // /* ✅ EARNINGS (NORMALIZED) */
-    // const earningsData = earningsRes.data?.data;
-
-    // setStats({
-    //   todayEarnings: earningsData?.todayEarnings ?? 0,
-    //   totalEarnings: earningsData?.totalEarnings ?? 0,
-    //   completedTrips: earningsData?.completedTrips ?? 0,
-    //   averageFare: earningsData?.averageFare ?? 0,
-    //   averageRating: earningsData?.averageRating ?? 0,
-    //   totalReviews: earningsData?.totalReviews ?? 0
-    // });
 
     const dashboard =
       dashboardRes.data.data;
@@ -235,186 +228,30 @@ useEffect(() => {
   return (
     <PageLayout>
       <div className="page-container">
-        <motion.div className="max-w-5xl mx-auto space-y-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-5xl mx-auto space-y-8"
+        >
 
           {/* HEADER */}
-          <div>
-            <h1 className="text-3xl font-bold">
-              Driver <span className="gradient-text">Dashboard</span>
-            </h1>
-            <p className="text-muted-foreground">
-              Manage availability, trips & earnings
-            </p>
-          </div>
-
-          {/* 🚗 ACTIVE BOOKING */}
-          <div className="mb-8">
-            {activeBooking && (
-              <div
-                className={`glass-card p-8 border transition-all duration-300 ${
-                  activeBooking.status === "pending"
-                    ? "border-yellow-500/40"
-                    : "border-primary/30"
-                }`}
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold">
-                      {activeBooking.status === "pending"
-                        ? "🚘 New Ride Request"
-                        : "🚗 Current Trip"}
-                    </h2>
-                      
-                    <p className="text-muted-foreground mt-1">
-                      {activeBooking.status === "pending"
-                        ? "A customer is requesting your ride."
-                        : "Manage your current trip."}
-                    </p>
-                  </div>
-                      
-                  <span
-                    className={`px-4 py-1 rounded-full text-sm font-medium ${
-                      activeBooking.status === "pending"
-                        ? "bg-yellow-500/15 text-yellow-400"
-                        : activeBooking.status === "accepted"
-                        ? "bg-blue-500/15 text-blue-400"
-                        : activeBooking.status === "confirmed"
-                        ? "bg-green-500/15 text-green-400"
-                        : activeBooking.status === "ongoing"
-                        ? "bg-primary/15 text-primary"
-                        : "bg-secondary text-secondary-foreground"
-                    }`}
-                  >
-                    {activeBooking.status.toUpperCase()}
-                  </span>
-                </div>
-                  
-                {/* Ride Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2">
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Customer
-                    </p>
-                  
-                    <p className="font-semibold text-lg">
-                      {activeBooking.userId?.name}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Fare
-                    </p>
-                  
-                    <p className="text-2xl font-bold text-primary">
-                      ₹{activeBooking.fare}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Pickup
-                    </p>
-                  
-                    <p className="font-medium">
-                      {activeBooking.pickupLocation?.name}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Destination
-                    </p>
-                  
-                    <p className="font-medium">
-                      {activeBooking.dropLocation?.name}
-                    </p>
-                  </div>
-                  
-                </div>
-                  
-                {/* Action Buttons */}
-                  
-                <div className="flex flex-col sm:flex-row gap-4">
-                  
-                  {activeBooking.status === "pending" && (
-                    <>
-                      <button
-                        onClick={acceptBooking}
-                        className="flex-1 bg-green-600 hover:bg-green-700 transition text-white py-3 rounded-xl flex items-center justify-center gap-2 font-semibold"
-                      >
-                        <CheckCircle className="h-5 w-5" />
-                        Accept Ride
-                      </button>
-                  
-                      <button
-                        onClick={rejectBooking}
-                        className="flex-1 bg-red-600 hover:bg-red-700 transition text-white py-3 rounded-xl flex items-center justify-center gap-2 font-semibold"
-                      >
-                        <XCircle className="h-5 w-5" />
-                        Reject
-                      </button>
-                    </>
-                  )}
-
-                  {activeBooking.status === "accepted" && (
-                    <button
-                      disabled
-                      className="w-full bg-yellow-500 text-white py-3 rounded-xl font-semibold cursor-not-allowed"
-                    >
-                      Waiting for Customer Payment...
-                    </button>
-                  )}
-
-                  {activeBooking.status === "confirmed" && (
-                    <button
-                      onClick={handleStartRide}
-                      className="w-full bg-green-600 hover:bg-green-700 transition text-white py-3 rounded-xl font-semibold"
-                    >
-                      🚗 Start Ride
-                    </button>
-                  )}
-
-                  {activeBooking.status === "ongoing" && (
-                    <button
-                      onClick={completeRide}
-                      className="w-full bg-primary hover:opacity-90 transition text-white py-3 rounded-xl font-semibold"
-                    >
-                      Complete Ride
-                    </button>
-                  )}
-
-                  {activeBooking.status === "completed" && (
-                    <button
-                      disabled
-                      className="w-full bg-muted text-muted-foreground py-3 rounded-xl cursor-not-allowed"
-                    >
-                      ✅ Trip Completed
-                    </button>
-                  )}
-
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* PROFILE + AVAILABILITY */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <div className="lg:col-span-2 glass-card p-6">
-              <h2 className="text-xl font-bold">{profile?.name}</h2>
-              <p className="text-muted-foreground">{profile?.email}</p>
-
-              {profile?.isVerified && (
-                <span className="inline-flex mt-3 items-center gap-1 px-2 py-1 text-xs rounded-full bg-success/20 text-success">
-                  <Shield className="h-3 w-3" /> Verified
-                </span>
-              )}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">
+                Driver <span className="gradient-text">Dashboard</span>
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Manage availability, trips & earnings
+              </p>
             </div>
 
-            <div className="glass-card p-6 flex flex-col sm:flex-row gap-3 sm:justify-between items-center">
-              <span>{isOnline ? "Online" : "Offline"}</span>
+            <div className="glass-card flex items-center gap-3 px-5 py-3 self-start sm:self-auto">
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${
+                  isOnline ? "bg-success animate-pulse-glow" : "bg-muted-foreground"
+                }`}
+              />
+              <span className="text-sm font-medium">{isOnline ? "Online" : "Offline"}</span>
               <Switch
                 checked={isOnline}
                 onCheckedChange={handleToggleOnline}
@@ -423,82 +260,214 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* 💰 EARNINGS STATS */}
-          {stats && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            
-              {/* Today's Earnings */}
-              <div className="glass-card p-6">
-                <div className="flex items-center gap-3">
-                  <IndianRupee className="h-6 w-6 text-green-500" />
+          {/* 🚗 ACTIVE BOOKING */}
+          {activeBooking && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`glass-card p-6 sm:p-8 border transition-all duration-300 ${
+                activeBooking.status === "pending"
+                  ? "border-warning/40"
+                  : "border-primary/30"
+              }`}
+            >
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <Car className="h-6 w-6 text-primary" />
+                    {activeBooking.status === "pending"
+                      ? "New Ride Request"
+                      : "Current Trip"}
+                  </h2>
 
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Today's Earnings
-                    </p>
-
-                    <p className="text-2xl font-bold text-green-500">
-                      ₹{stats.todayEarnings}
-                    </p>
-                  </div>
+                  <p className="text-muted-foreground mt-1">
+                    {activeBooking.status === "pending"
+                      ? "A customer is requesting your ride."
+                      : "Manage your current trip."}
+                  </p>
                 </div>
+
+                <span
+                  className={`self-start px-4 py-1 rounded-full text-sm font-medium ${activeBookingBadge(
+                    activeBooking.status
+                  )}`}
+                >
+                  {activeBooking.status?.toUpperCase()}
+                </span>
               </div>
 
-              {/* Total Earnings */}
-              <div className="glass-card p-6">
-                <div className="flex items-center gap-3">
-                  <IndianRupee className="h-6 w-6 text-primary" />
+              {/* Ride Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
 
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Total Earnings
-                    </p>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Customer
+                  </p>
 
-                    <p className="text-2xl font-bold gradient-text">
-                      ₹{stats.totalEarnings}
-                    </p>
-                  </div>
+                  <p className="font-semibold text-lg">
+                    {activeBooking.userId?.name}
+                  </p>
                 </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Fare
+                  </p>
+
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{activeBooking.fare}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Pickup
+                  </p>
+
+                  <p className="font-medium">
+                    {activeBooking.pickupLocation?.name}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Destination
+                  </p>
+
+                  <p className="font-medium">
+                    {activeBooking.dropLocation?.name}
+                  </p>
+                </div>
+
               </div>
 
-              {/* Completed Trips */}
-              <div className="glass-card p-6">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+              {/* Action Buttons */}
 
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Completed Trips
-                    </p>
+              <div className="flex flex-col sm:flex-row gap-4">
 
-                    <p className="text-2xl font-bold">
-                      {stats.completedTrips}
-                    </p>
-                  </div>
-                </div>
+                {activeBooking.status === "pending" && (
+                  <>
+                    <button
+                      onClick={acceptBooking}
+                      className="flex-1 bg-success hover:opacity-90 transition text-success-foreground py-3 rounded-xl flex items-center justify-center gap-2 font-semibold"
+                    >
+                      <CheckCircle className="h-5 w-5" />
+                      Accept Ride
+                    </button>
+
+                    <button
+                      onClick={rejectBooking}
+                      className="flex-1 bg-destructive hover:opacity-90 transition text-destructive-foreground py-3 rounded-xl flex items-center justify-center gap-2 font-semibold"
+                    >
+                      <XCircle className="h-5 w-5" />
+                      Reject
+                    </button>
+                  </>
+                )}
+
+                {activeBooking.status === "accepted" && (
+                  <button
+                    disabled
+                    className="w-full bg-warning/80 text-warning-foreground py-3 rounded-xl font-semibold cursor-not-allowed"
+                  >
+                    Waiting for Customer Payment...
+                  </button>
+                )}
+
+                {activeBooking.status === "confirmed" && (
+                  <button
+                    onClick={handleStartRide}
+                    className="w-full bg-success hover:opacity-90 transition text-success-foreground py-3 rounded-xl font-semibold"
+                  >
+                    Start Ride
+                  </button>
+                )}
+
+                {activeBooking.status === "ongoing" && (
+                  <button
+                    onClick={completeRide}
+                    className="w-full bg-primary hover:opacity-90 transition text-primary-foreground py-3 rounded-xl font-semibold"
+                  >
+                    Complete Ride
+                  </button>
+                )}
+
+                {activeBooking.status === "completed" && (
+                  <button
+                    disabled
+                    className="w-full bg-muted text-muted-foreground py-3 rounded-xl cursor-not-allowed"
+                  >
+                    Trip Completed
+                  </button>
+                )}
+
               </div>
-
-            </div>
+            </motion.div>
           )}
 
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-3">
-              ⭐
+          {/* PROFILE */}
+          <div className="glass-card p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl gradient-primary flex items-center justify-center shrink-0 shadow-glow">
+                <Car className="h-7 w-7 text-primary-foreground" />
+              </div>
               <div>
-                <p className="text-sm text-muted-foreground">
-                  Driver Rating
-                </p>
+                <h2 className="text-xl font-bold">{profile?.name}</h2>
+                <p className="text-muted-foreground text-sm">{profile?.email}</p>
 
-                <p className="text-2xl font-bold">
-                  {stats.averageRating.toFixed(1) ?? "0.0"}
-                </p>
-
-                <p className="text-xs text-muted-foreground">
-                  {stats.totalReviews ?? 0} Reviews
-                </p>
+                {profile?.isVerified && (
+                  <span className="inline-flex mt-2 items-center gap-1 px-2 py-1 text-xs rounded-full badge-verified">
+                    <Shield className="h-3 w-3" /> Verified
+                  </span>
+                )}
               </div>
             </div>
           </div>
+
+          {/* 💰 EARNINGS STATS */}
+          {stats && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+              {/* Today's Earnings */}
+              <StatChip
+                icon={IndianRupee}
+                label="Today's Earnings"
+                value={`₹${stats.todayEarnings}`}
+                accent="text-success"
+                chip="bg-success/15"
+              />
+
+              {/* Total Earnings */}
+              <StatChip
+                icon={IndianRupee}
+                label="Total Earnings"
+                value={`₹${stats.totalEarnings}`}
+                accent="text-primary"
+                chip="bg-primary/15"
+              />
+
+              {/* Completed Trips */}
+              <StatChip
+                icon={TrendingUp}
+                label="Completed Trips"
+                value={`${stats.completedTrips}`}
+                accent="text-accent"
+                chip="bg-accent/15"
+              />
+
+              {/* Driver Rating */}
+              <StatChip
+                icon={Star}
+                label="Driver Rating"
+                value={`${stats.averageRating?.toFixed(1) ?? "0.0"}`}
+                subtitle={`${stats.totalReviews ?? 0} Reviews`}
+                accent="text-warning"
+                chip="bg-warning/15"
+              />
+
+            </div>
+          )}
 
           <PerformanceCard
             rating={stats.averageRating}
@@ -521,23 +490,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* 📊 DAILY EARNINGS */}
-          {/* {stats?.daily?.length > 0 && (
-            <div className="glass-card p-6">
-              <h3 className="font-semibold mb-4">Recent Earnings</h3>
-              <div className="space-y-2">
-                {stats.daily.slice(0, 7).map((day) => (
-                  <div key={day.date} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {new Date(day.date).toLocaleDateString()}
-                    </span>
-                    <span className="font-medium">₹{day.amount}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )} */}
-
           {weeklyEarnings.length > 0 && (
             <WeeklyEarningsChart
               data={weeklyEarnings}
@@ -549,9 +501,11 @@ useEffect(() => {
           />
 
           {/* 📜 TRIP HISTORY */}
-          <div className="glass-card p-6 flex justify-between items-center">
+          <div className="glass-card-hover p-6 flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
             <div className="flex items-center gap-3">
-              <List className="h-6 w-6 text-primary" />
+              <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                <List className="h-6 w-6 text-primary" />
+              </div>
               <div>
                 <h3 className="font-semibold">Trip History</h3>
                 <p className="text-sm text-muted-foreground">
@@ -560,8 +514,9 @@ useEffect(() => {
               </div>
             </div>
             <Link to="/driver/trips">
-              <button className="px-4 py-2 rounded-lg border border-border">
+              <button className="px-4 py-2 rounded-lg border border-border flex items-center gap-2 hover:bg-secondary/40 transition-colors">
                 View Trips
+                <ArrowRight className="h-4 w-4" />
               </button>
             </Link>
           </div>
@@ -571,5 +526,42 @@ useEffect(() => {
     </PageLayout>
   );
 };
+
+/* ================= STAT CHIP ================= */
+const StatChip = ({
+  icon: Icon,
+  label,
+  value,
+  subtitle,
+  accent,
+  chip,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  subtitle?: string;
+  accent: string;
+  chip: string;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="glass-card-hover p-5"
+  >
+    <div className="flex items-center gap-3">
+      <div className={`h-12 w-12 rounded-xl ${chip} flex items-center justify-center shrink-0`}>
+        <Icon className={`h-6 w-6 ${accent}`} />
+      </div>
+
+      <div>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className={`text-2xl font-bold ${accent}`}>{value}</p>
+        {subtitle && (
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        )}
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default DriverDashboard;

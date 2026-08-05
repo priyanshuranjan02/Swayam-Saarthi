@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -6,6 +6,7 @@ import {
   IndianRupee,
   Loader2,
   Receipt,
+  PackageOpen,
 } from "lucide-react";
 import PageLayout from "@/components/layout/PageLayout";
 import api from "@/lib/api";
@@ -28,9 +29,27 @@ interface Booking {
   };
 }
 
+const FILTERS = ["all", "completed", "ongoing", "pending", "cancelled"] as const;
+
+const statusPill = (status: string) => {
+  switch (status) {
+    case "completed":
+      return "badge-verified";
+    case "ongoing":
+      return "bg-primary/10 text-primary border border-primary/20";
+    case "pending":
+      return "bg-warning/10 text-warning border border-warning/20";
+    case "cancelled":
+      return "bg-destructive/10 text-destructive border border-destructive/20";
+    default:
+      return "bg-secondary text-secondary-foreground";
+  }
+};
+
 const UserBookingHistory = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
 
   /* ================= FETCH HISTORY ================= */
   useEffect(() => {
@@ -48,6 +67,11 @@ const UserBookingHistory = () => {
     fetchHistory();
   }, []);
 
+  const filteredBookings = useMemo(() => {
+    if (filter === "all") return bookings;
+    return bookings.filter((b) => b.status === filter);
+  }, [bookings, filter]);
+
   /* ================= LOADING ================= */
   if (loading) {
     return (
@@ -63,7 +87,7 @@ const UserBookingHistory = () => {
     <PageLayout>
       <div className="page-container max-w-4xl mx-auto">
         {/* HEADER */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">
             My <span className="gradient-text">Trips</span>
           </h1>
@@ -72,24 +96,49 @@ const UserBookingHistory = () => {
           </p>
         </div>
 
+        {/* FILTERS */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6 pb-1">
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors ${
+                filter === f
+                  ? "gradient-primary text-primary-foreground shadow-soft"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
         {/* EMPTY STATE */}
-        {bookings.length === 0 ? (
-          <div className="glass-card p-8 text-center text-muted-foreground">
-            No bookings found
+        {filteredBookings.length === 0 ? (
+          <div className="glass-card p-10 flex flex-col items-center text-center gap-3">
+            <div className="h-16 w-16 rounded-2xl bg-secondary flex items-center justify-center">
+              <PackageOpen className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="font-semibold">No bookings found</p>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              {filter === "all"
+                ? "You haven't booked any rides yet."
+                : `You have no ${filter} bookings.`}
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {bookings.map((booking, index) => (
+            {filteredBookings.map((booking, index) => (
               <motion.div
                 key={booking._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="glass-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                className="glass-card-hover p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
               >
                 {/* LEFT */}
                 <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                     <MapPin className="h-6 w-6 text-primary" />
                   </div>
 
@@ -111,24 +160,20 @@ const UserBookingHistory = () => {
                 </div>
 
                 {/* RIGHT */}
-                <div className="flex flex-col items-end gap-3">
+                <div className="flex flex-col items-start md:items-end gap-3">
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                      booking.status === "completed"
-                        ? "badge-verified"
-                        : booking.status === "ongoing"
-                        ? "bg-primary/10 text-primary"
-                        : "bg-secondary text-secondary-foreground"
-                    }`}
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize ${statusPill(
+                      booking.status
+                    )}`}
                   >
                     {booking.status}
                   </span>
-                  
+
                   <div className="flex items-center gap-1 text-lg font-semibold">
                     <IndianRupee className="h-4 w-4" />
                     {booking.fare}
                   </div>
-                  
+
                   {booking.status === "completed" && (
                     <Button
                       variant="outline"

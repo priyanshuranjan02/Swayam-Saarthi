@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Mail, Phone, Shield, User } from "lucide-react";
+import { Mail, Phone, Shield, User } from "lucide-react";
 import PageLayout from "@/components/layout/PageLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Save, Pencil, X } from "lucide-react";
 import { Eye, EyeOff, Lock, KeyRound } from "lucide-react";
-import {CheckCircle2, Calendar} from "lucide-react";
+import { CheckCircle2, Calendar, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 
@@ -38,22 +38,24 @@ const PasswordInput = ({
     <label className="text-sm font-medium">{label}</label>
 
     <div className="relative mt-2">
+      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         type={show ? "text" : "password"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pr-12"
+        className="pl-10 pr-12"
       />
 
       <button
         type="button"
         onClick={() => setShow(!show)}
-        className="absolute right-3 top-1/2 -translate-y-1/2"
+        aria-label={show ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {show ? (
-          <EyeOff className="h-5 w-5" />
+          <EyeOff className="h-4 w-4" />
         ) : (
-          <Eye className="h-5 w-5" />
+          <Eye className="h-4 w-4" />
         )}
       </button>
     </div>
@@ -267,7 +269,11 @@ const Profile = () => {
     if (loading) {
         return (
             <PageLayout>
-                <ProfileSkeleton />
+                <div className="page-container">
+                  <div className="max-w-3xl mx-auto">
+                    <ProfileSkeleton />
+                  </div>
+                </div>
             </PageLayout>
         );
     }
@@ -275,22 +281,22 @@ const Profile = () => {
     const roleStyles = {
       user: {
         label: "User",
-        className:
-          "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+        className: "bg-primary/15 text-primary",
       },
 
       driver: {
         label: "Driver",
-        className:
-          "bg-green-500/20 text-green-600 dark:text-green-400",
+        className: "bg-success/15 text-success",
       },
 
       admin: {
         label: "Administrator",
-        className:
-          "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+        className: "bg-accent/15 text-accent-foreground",
       },
     };
+
+    const currentRoleStyle =
+      roleStyles[profile?.role as keyof typeof roleStyles] || roleStyles.user;
 
     const getPasswordStrength = (password: string) => {
       if (!password) {
@@ -314,23 +320,23 @@ const Profile = () => {
         return {
           label: "Weak",
           percentage: score,
-          color: "bg-red-500",
-          textColor: "text-red-500",
+          color: "bg-destructive",
+          textColor: "text-destructive",
         };
 
       if (score <= 80)
         return {
           label: "Medium",
           percentage: score,
-          color: "bg-yellow-500",
-          textColor: "text-yellow-500",
+          color: "bg-warning",
+          textColor: "text-warning",
         };
 
       return {
         label: "Strong",
         percentage: score,
-        color: "bg-green-500",
-        textColor: "text-green-500",
+        color: "bg-success",
+        textColor: "text-success",
       };
     };
 
@@ -341,19 +347,19 @@ const Profile = () => {
     return (
       <PageLayout>
         <div className="page-container">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
 
-            <h1 className="text-3xl font-bold mb-8">
+            <h1 className="text-3xl font-bold">
               My <span className="gradient-text">Profile</span>
             </h1>
 
+            {/* Avatar header block */}
             <div className="glass-card p-8">
-
-              <div className="flex flex-col items-center mb-10">
+              <div className="flex flex-col items-center text-center">
 
                   {/* Avatar */}
 
-                  <div className="h-28 w-28 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-lg">
+                  <div className="h-28 w-28 rounded-full bg-linear-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-glow">
 
                     <span className="text-4xl font-bold tracking-wide">
                       {profile?.name
@@ -368,26 +374,26 @@ const Profile = () => {
                     
                   {/* Name */}
                     
-                  <h2 className="text-3xl font-bold mt-5">
+                  <h2 className="font-display text-3xl font-bold mt-5">
                     {profile?.name}
                   </h2>
-                    
-                  {/* Role */}
-                    
-                  <p className="text-muted-foreground mt-1 capitalize">
-                    {profile?.role}
-                  </p>
+
+                  {/* Role badge */}
+
+                  <span className={`mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium capitalize ${currentRoleStyle.className}`}>
+                    {currentRoleStyle.label}
+                  </span>
                     
                   {/* Verified */}
                     
                   {(profile?.role === "admin" ||
                     profile?.role === "driver") && (
                     
-                    <div className="mt-3 flex items-center gap-2 rounded-full bg-green-500/15 px-4 py-2">
+                    <div className="mt-3 badge-verified">
                     
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <CheckCircle2 className="h-4 w-4" />
                     
-                      <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                      <span className="text-sm font-medium">
                         Verified Account
                       </span>
                     
@@ -409,22 +415,45 @@ const Profile = () => {
                   </div>
               
                 </div>
+            </div>
 
-              {/* Profile Details */}
+            {/* Personal information card */}
+            <div className="glass-card p-6 sm:p-8">
 
-              <div className="space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="section-title text-lg font-semibold">Personal Information</h3>
+                </div>
 
-                <div className="flex items-center gap-4">
+                {!editing && (
+                  <Button
+                    onClick={() => setEditing(true)}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
+                )}
+              </div>
 
-                  <Mail className="text-primary h-5 w-5" />
+              <div className="space-y-5">
 
-                  <div>
+                <div className="flex items-center gap-4 rounded-xl bg-surface-muted/60 p-4">
+
+                  <Mail className="text-primary h-5 w-5 shrink-0" />
+
+                  <div className="min-w-0">
 
                     <p className="text-sm text-muted-foreground">
                       Email
                     </p>
 
-                    <p className="font-medium">
+                    <p className="font-medium truncate">
                       {profile?.email}
                     </p>
 
@@ -432,18 +461,20 @@ const Profile = () => {
 
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 rounded-xl bg-surface-muted/60 p-4">
 
-                  <Phone className="text-primary h-5 w-5" />
+                  <Phone className="text-primary h-5 w-5 shrink-0" />
 
-                  <div>
+                  <div className="w-full">
 
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mb-1">
                       Phone
                     </p>
 
                     {editing ? (
                       <Input
+                        id="profile-phone"
+                        aria-label="Phone number"
                         value={formData.phone}
                         onChange={(e) =>
                           setFormData({
@@ -462,9 +493,9 @@ const Profile = () => {
 
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 rounded-xl bg-surface-muted/60 p-4">
 
-                  <Shield className="text-primary h-5 w-5" />
+                  <Shield className="text-primary h-5 w-5 shrink-0" />
 
                   <div>
 
@@ -482,21 +513,8 @@ const Profile = () => {
 
               </div>
 
+              {editing && (
               <div className="mt-8 flex justify-end gap-3">
-
-              {!editing ? (
-            
-                <Button
-                  onClick={() => setEditing(true)}
-                  className="gap-2"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit Profile
-                </Button>
-            
-              ) : (
-            
-                <>
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -521,20 +539,21 @@ const Profile = () => {
                     {saving ? "Saving..." : "Save Changes"}
                 
                   </Button>
-                </>
-            
+              </div>
               )}
             </div>
 
-              <div className="glass-card p-8 mt-8">
+              <div className="glass-card p-6 sm:p-8">
 
               <div className="flex items-center gap-3 mb-6">
 
-                <KeyRound className="h-6 w-6 text-primary" />
+                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <KeyRound className="h-5 w-5 text-primary" />
+                </div>
 
-                <h2 className="text-xl font-semibold">
+                <h3 className="section-title text-lg font-semibold">
                   Change Password
-                </h2>
+                </h3>
 
               </div>
 
@@ -594,23 +613,18 @@ const Profile = () => {
                 )}
 
                 <div className="text-xs text-muted-foreground space-y-1">
-
-                  <p>
-                    ✓ Minimum 8 characters
+                  <p className="flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-primary" /> Minimum 8 characters
                   </p>
-                            
-                  <p>
-                    ✓ Uppercase & lowercase letters
+                  <p className="flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-primary" /> Uppercase &amp; lowercase letters
                   </p>
-                            
-                  <p>
-                    ✓ Numbers
+                  <p className="flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-primary" /> Numbers
                   </p>
-                            
-                  <p>
-                    ✓ Special characters
+                  <p className="flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-primary" /> Special characters
                   </p>
-                            
                 </div>
 
                 <PasswordInput
@@ -638,7 +652,6 @@ const Profile = () => {
                 
               </div>
                 
-            </div>
             </div>
 
           </div>

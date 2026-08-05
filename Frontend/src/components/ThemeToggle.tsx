@@ -1,4 +1,5 @@
 import { Moon, Sun } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 
@@ -10,13 +11,34 @@ const ThemeToggle = () => {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="rounded-full"
+      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      className="relative rounded-full overflow-hidden"
     >
-      {theme === "dark" ? (
-        <Sun className="h-5 w-5 text-yellow-400" />
-      ) : (
-        <Moon className="h-5 w-5 text-blue-600" />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {theme === "dark" ? (
+          <motion.span
+            key="sun"
+            initial={{ rotate: -90, opacity: 0, scale: 0.6 }}
+            animate={{ rotate: 0, opacity: 1, scale: 1 }}
+            exit={{ rotate: 90, opacity: 0, scale: 0.6 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-center"
+          >
+            <Sun className="h-5 w-5 text-warning" />
+          </motion.span>
+        ) : (
+          <motion.span
+            key="moon"
+            initial={{ rotate: 90, opacity: 0, scale: 0.6 }}
+            animate={{ rotate: 0, opacity: 1, scale: 1 }}
+            exit={{ rotate: -90, opacity: 0, scale: 0.6 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-center"
+          >
+            <Moon className="h-5 w-5 text-primary" />
+          </motion.span>
+        )}
+      </AnimatePresence>
     </Button>
   );
 };

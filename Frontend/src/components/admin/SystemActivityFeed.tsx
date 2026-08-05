@@ -24,7 +24,7 @@ export default function SystemActivityFeed({
       case "booking":
         return (
           <ClipboardList
-            className="text-blue-500"
+            className="text-primary"
             size={20}
           />
         );

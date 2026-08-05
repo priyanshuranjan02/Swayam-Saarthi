@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Navigation, ArrowRight, Loader2 } from "lucide-react";
+import { MapPin, Navigation, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LocationSearch from "@/components/location/LocationSearch";
 import { Label } from "@/components/ui/label";
@@ -116,11 +116,7 @@ const CreateBooking = () => {
   return (
     <PageLayout showFooter={false}>
       <div className="page-container min-h-[calc(100vh-4rem)]">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto"
-        >
+        <div className="max-w-2xl mx-auto">
           {/* STEP INDICATOR */}
           <StepIndicator
             currentStep={1}
@@ -128,108 +124,111 @@ const CreateBooking = () => {
             labels={["Trip Details", "Select Driver", "Confirmation"]}
           />
 
-          {/* TITLE */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-              Enter <span className="gradient-text">Trip Details</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Tell us where you want to go
-            </p>
-          </div>
-
-          {/* FORM */}
-          <div className="glass-card p-5 sm:p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              {/* Pickup */}
-              <div className="space-y-2">
-                <div className="relative">
-                  {/* <MapPin className="absolute left-3 top-[52px] h-5 w-5 text-success z-10" /> */}
-
-                  <LocationSearch
-                    icon={<MapPin className="text-success" />}
-                    label="Pickup Location"
-                    placeholder="Enter pickup location"
-                    value={pickup}
-                    onChange={setPickup}
-                    onLocationSelect={(location) => {
-                      setPickup(location.name);
-                      setPickupLocation(location);
-                    }}
-                  />
-                </div>
-                  
-                {errors.pickup && (
-                  <p className="text-sm text-destructive">
-                    {errors.pickup}
-                  </p>
-                )}
-              </div>
-              
-              <div className="flex justify-center">
-                <div className="h-8 w-0.5 bg-border" />
-              </div>
-              
-              {/* Drop */}
-              <div className="space-y-2">
-                <div className="relative">
-                  {/* <Navigation className="absolute left-3 top-[52px] h-5 w-5 text-destructive z-10" /> */}
-              
-                  <LocationSearch
-                    icon={<Navigation className="text-destructive" />}
-                    label="Drop Location"
-                    placeholder="Enter drop location"
-                    value={drop}
-                    onChange={setDrop}
-                    onLocationSelect={(location) => {
-                      setDrop(location.name);
-                      setDropLocation(location);
-                    }}
-                  />
-                </div>
-                  
-                {errors.drop && (
-                  <p className="text-sm text-destructive">
-                    {errors.drop}
-                  </p>
-                )}
-              </div>
-              
-              <Button
-                type="submit"
-                variant="hero"
-                size="lg"
-                className="w-full sm:w-auto sm:min-w-[220px] h-12"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Next Step
-                    <ArrowRight className="h-5 w-5 ml-2" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
-
-          {/* INFO */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6 p-4 bg-secondary/30 rounded-lg border border-border/30"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
           >
-            <p className="text-sm text-muted-foreground text-center">
-              💡 You'll be able to select a verified driver in the next step
-            </p>
+            {/* TITLE */}
+            <div className="text-center mb-8">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-3">
+                <Sparkles className="h-3.5 w-3.5" />
+                Step 1 of 3
+              </span>
+              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
+                Where would you like to <span className="gradient-text">go?</span>
+              </h1>
+              <p className="mt-2 text-sm sm:text-base text-muted-foreground">
+                Enter your pickup and drop locations to get started
+              </p>
+            </div>
+
+            {/* FORM */}
+            <div className="glass-card p-5 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+
+                {/* Pickup + Drop, connected with route line */}
+                <div className="relative space-y-6">
+                  <div className="absolute left-[22px] top-14 bottom-14 hidden w-0.5 border-l-2 border-dashed border-border sm:block" />
+
+                  {/* Pickup */}
+                  <div className="space-y-2">
+                    <LocationSearch
+                      icon={<MapPin className="text-success" />}
+                      label="Pickup Location"
+                      placeholder="Enter pickup location"
+                      value={pickup}
+                      onChange={setPickup}
+                      onLocationSelect={(location) => {
+                        setPickup(location.name);
+                        setPickupLocation(location);
+                      }}
+                    />
+                    {errors.pickup && (
+                      <p className="text-sm text-destructive">
+                        {errors.pickup}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Drop */}
+                  <div className="space-y-2">
+                    <LocationSearch
+                      icon={<Navigation className="text-destructive" />}
+                      label="Drop Location"
+                      placeholder="Enter drop location"
+                      value={drop}
+                      onChange={setDrop}
+                      onLocationSelect={(location) => {
+                        setDrop(location.name);
+                        setDropLocation(location);
+                      }}
+                    />
+                    {errors.drop && (
+                      <p className="text-sm text-destructive">
+                        {errors.drop}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="hero"
+                  size="lg"
+                  className="w-full sm:w-auto sm:min-w-[220px] h-12"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Next Step
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+
+            {/* INFO */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-6 flex items-center gap-3 rounded-2xl border border-border/50 bg-surface-muted/60 p-4"
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/15 text-base">
+                💡
+              </span>
+              <p className="text-sm text-muted-foreground">
+                You'll be able to select a verified driver in the next step
+              </p>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </PageLayout>
   );

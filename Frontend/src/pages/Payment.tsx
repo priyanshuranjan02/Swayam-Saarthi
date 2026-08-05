@@ -7,6 +7,8 @@ import {
   CheckCircle2,
   Loader2,
   IndianRupee,
+  ShieldCheck,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageLayout from "@/components/layout/PageLayout";
@@ -107,6 +109,21 @@ const Payment = () => {
 
   if (!booking) return null;
 
+  const methods: { key: PaymentMethod; label: string; desc: string; icon: React.ReactNode }[] = [
+    {
+      key: "upi",
+      label: "UPI Payment",
+      desc: "Pay using any UPI app",
+      icon: <Smartphone className="h-6 w-6" />,
+    },
+    {
+      key: "card",
+      label: "Card Payment",
+      desc: "Credit or Debit card",
+      icon: <CreditCard className="h-6 w-6" />,
+    },
+  ];
+
   return (
     <PageLayout showFooter={false}>
       <div className="page-container min-h-[calc(100vh-4rem)]">
@@ -131,7 +148,7 @@ const Payment = () => {
                 >
                   <CheckCircle2 className="h-12 w-12 text-success" />
                 </motion.div>
-                <h1 className="text-3xl font-bold mb-3">
+                <h1 className="font-display text-3xl font-bold mb-3">
                   Payment Successful!
                 </h1>
                 <p className="text-muted-foreground mb-4">
@@ -145,7 +162,11 @@ const Payment = () => {
               <motion.div key="payment" exit={{ opacity: 0 }}>
                 {/* TITLE */}
                 <div className="text-center mb-8">
-                  <h1 className="text-3xl font-bold mb-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-3">
+                    <Wallet className="h-3.5 w-3.5" />
+                    Secure Checkout
+                  </span>
+                  <h1 className="font-display text-3xl font-bold mb-2">
                     Complete{" "}
                     <span className="gradient-text">Payment</span>
                   </h1>
@@ -230,46 +251,47 @@ const Payment = () => {
                 </div>
 
                 {/* PAYMENT METHODS */}
-                <div className="space-y-4 mb-8">
-                  {/* UPI */}
-                  <button
-                    onClick={() => setSelectedMethod("upi")}
-                    className={`w-full glass-card p-4 flex items-center gap-4 ${
-                      selectedMethod === "upi"
-                        ? "border-primary ring-2 ring-primary/20"
-                        : ""
-                    }`}
-                  >
-                    <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center">
-                      <Smartphone className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-medium">UPI Payment</p>
-                      <p className="text-sm text-muted-foreground">
-                        Pay using any UPI app
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* CARD */}
-                  <button
-                    onClick={() => setSelectedMethod("card")}
-                    className={`w-full glass-card p-4 flex items-center gap-4 ${
-                      selectedMethod === "card"
-                        ? "border-primary ring-2 ring-primary/20"
-                        : ""
-                    }`}
-                  >
-                    <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center">
-                      <CreditCard className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-medium">Card Payment</p>
-                      <p className="text-sm text-muted-foreground">
-                        Credit or Debit card
-                      </p>
-                    </div>
-                  </button>
+                <div className="space-y-3 mb-8">
+                  {methods.map((m) => {
+                    const active = selectedMethod === m.key;
+                    return (
+                      <button
+                        key={m.key}
+                        type="button"
+                        onClick={() => setSelectedMethod(m.key)}
+                        className={`w-full glass-card p-4 flex items-center gap-4 transition-all ${
+                          active
+                            ? "border-primary ring-2 ring-primary/25"
+                            : "hover:border-primary/30"
+                        }`}
+                      >
+                        <div
+                          className={`h-12 w-12 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+                            active
+                              ? "gradient-primary text-primary-foreground"
+                              : "bg-surface-muted text-primary"
+                          }`}
+                        >
+                          {m.icon}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="font-medium">{m.label}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {m.desc}
+                          </p>
+                        </div>
+                        <div
+                          className={`h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center ${
+                            active ? "border-primary" : "border-border"
+                          }`}
+                        >
+                          {active && (
+                            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* PAY BUTTON */}
@@ -290,8 +312,9 @@ const Payment = () => {
                   )}
                 </Button>
 
-                <p className="text-center text-xs text-muted-foreground mt-6">
-                  🔒 Your payment is secure and encrypted
+                <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground mt-6">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Your payment is secure and encrypted
                 </p>
               </motion.div>
             )}

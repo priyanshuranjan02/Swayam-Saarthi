@@ -94,10 +94,10 @@ export default function UserStatsCards({
 
         <div className="flex items-center gap-4">
 
-          <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-xl bg-primary/15 flex items-center justify-center">
 
             <Calculator
-              className="text-blue-500"
+              className="text-primary"
               size={24}
             />
 
@@ -109,7 +109,7 @@ export default function UserStatsCards({
               Average Fare
             </p>
 
-            <h2 className="text-2xl sm:text-3xl font-bold text-blue-500">
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary">
               ₹{stats.averageFare}
             </h2>
 

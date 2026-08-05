@@ -39,7 +39,7 @@ const statusColor = (status: string) => {
       return "text-yellow-500";
 
     case "accepted":
-      return "text-blue-500";
+      return "text-primary";
 
     case "confirmed":
       return "text-purple-500";
@@ -153,7 +153,7 @@ export default function CurrentRideCard({
 
         <div className="flex items-start gap-3">
 
-          <MapPin className="text-blue-500 mt-1" />
+          <MapPin className="text-primary mt-1" />
 
           <div>
 

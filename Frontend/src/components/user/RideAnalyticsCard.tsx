@@ -73,10 +73,10 @@ export default function RideAnalyticsCard({
 
           <div className="flex items-center gap-3">
 
-            <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
 
               <Map
-                className="text-blue-500"
+                className="text-primary"
                 size={24}
               />
 
@@ -88,7 +88,7 @@ export default function RideAnalyticsCard({
                 Longest Ride
               </p>
 
-              <h3 className="text-2xl font-bold text-blue-500">
+              <h3 className="text-2xl font-bold text-primary">
                 {analytics.longestRide.toFixed(1)} km
               </h3>
 
