@@ -74,87 +74,31 @@ The application features real-time booking updates using Socket.IO, secure JWT a
 
 ---
 
-# 🚀 Key Features
+## 🌟 Project Highlights
 
-✅ Role-Based Authentication
-
-✅ JWT Authorization
-
-✅ Real-Time Booking Updates (Socket.IO)
-
-✅ Live Driver Tracking
-
-✅ Leaflet + OpenStreetMap Integration
-
-✅ Ride Progress Timeline
-
-✅ Payment Workflow
-
-✅ PDF Receipt Generation
-
-✅ Driver Rating & Reviews
-
-✅ Notifications
-
-✅ Responsive UI
-
-✅ Modern Dashboard Analytics
+- 🚖 End-to-End Ride Booking Workflow
+- 🔐 Secure JWT Authentication & Role-Based Access
+- ⚡ Real-Time Driver Tracking with Socket.IO
+- 🗺 Live Navigation using Leaflet & OpenStreetMap
+- 💳 Integrated Payment Workflow
+- ⭐ Ratings & Reviews System
+- 🔔 Real-Time Notifications
+- 📊 Interactive Analytics Dashboards
+- 📱 Fully Responsive Modern UI
+- ☁️ Deployed on Vercel & Render
 
 ---
 
 # 🏗 System Architecture
 
-```text
-                +----------------------+
-                |      Frontend        |
-                | React + TypeScript   |
-                +----------+-----------+
-                           |
-                    REST APIs / JWT
-                           |
-                +----------v-----------+
-                |   Express Backend    |
-                |   Node.js + Socket   |
-                +----------+-----------+
-                           |
-         +-----------------+----------------+
-         |                                  |
-         |                                  |
-+--------v--------+              +----------v---------+
-| MongoDB Atlas   |              | Socket.IO Server   |
-| Users/Drivers   |              | Real-Time Updates  |
-| Bookings        |              | Driver Tracking    |
-+-----------------+              +--------------------+
-```
+![System Architecture](./screenshots/system-architecture.png)
 
 ---
 
 # 📌 Booking Workflow
+# 🏗 System Architecture
 
-```text
-User Login
-      │
-      ▼
-Create Booking
-      │
-      ▼
-Select Driver
-      │
-      ▼
-Driver Accepts Ride
-      │
-      ▼
-Payment
-      │
-      ▼
-Live Ride Tracking
-      │
-      ▼
-Ride Completed
-      │
-      ▼
-Rate Driver
-```
+![Booking Workflow](./screenshots/workflow.png)
 
 ---
 
@@ -199,53 +143,29 @@ Database → MongoDB Atlas
 
 ---
 
-# 📷 Screenshots
+# 📷 Application Preview
 
-## Landing Page
+## 🌐 Landing Page
 
-> *(Add Screenshot)*
-
----
-
-## User Dashboard
-
-> *(Add Screenshot)*
+![Landing Page](./screenshots/landing-page.png)
 
 ---
 
-## Driver Dashboard
+## 👤 User Dashboard
 
-> *(Add Screenshot)*
-
----
-
-## Admin Dashboard
-
-> *(Add Screenshot)*
+![User Dashboard](./screenshots/user-dashboard.png)
 
 ---
 
-## Booking Flow
+## 🚗 Driver Dashboard
 
-> *(Add Screenshot)*
-
----
-
-## Live Ride Tracking
-
-> *(Add Screenshot)*
+![Driver Dashboard](./screenshots/driver-dashboard.png)
 
 ---
 
-## Payment
+## 🛠 Admin Dashboard
 
-> *(Add Screenshot)*
-
----
-
-## Ride Completed
-
-> *(Add Screenshot)*
+![Admin Dashboard](./screenshots/admin-dashboard.png)
 
 ---
 
@@ -261,6 +181,7 @@ Swayam-Saarthi
 │   ├── models
 │   ├── routes
 │   ├── utils
+│   ├── app.js
 │   └── server.js
 │
 ├── Frontend
@@ -272,6 +193,7 @@ Swayam-Saarthi
 │   ├── services
 │   └── assets
 │
+├── screenshots
 └── README.md
 ```
 
@@ -342,22 +264,18 @@ VITE_SOCKET_URL=
 
 ---
 
-# 👨‍💻 Author
+<div align="center">
 
-**Priyanshu Ranjan**
+## 👨‍💻 Developed by
 
-B.Tech Computer Science (AI & ML)
+# Priyanshu Ranjan
 
-VIT Bhopal University
+**Full Stack Developer • AI & Machine Learning Enthusiast**
 
----
+*"Building intelligent, scalable, and real-time software solutions that solve real-world problems."*
+
+</div>
 
 # ⭐ Support
 
 If you found this project useful, consider giving it a ⭐ on GitHub.
-
----
-
-# 📜 License
-
-This project is developed for educational and portfolio purposes.
