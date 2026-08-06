@@ -96,7 +96,6 @@ The application features real-time booking updates using Socket.IO, secure JWT a
 ---
 
 # 📌 Booking Workflow
-# 🏗 System Architecture
 
 ![Booking Workflow](./screenshots/workflow.png)
 
@@ -166,6 +165,7 @@ Database → MongoDB Atlas
 ## 🛠 Admin Dashboard
 
 ![Admin Dashboard](./screenshots/admin-dashboard.png)
+![Admin Dashboard](./screenshots/admin-dashboard2.png)
 
 ---
 
