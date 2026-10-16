@@ -13,6 +13,7 @@ import userRoutes from "./routes/userRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import publicRoutes from "./routes/publicRoutes.js";
+import { setSocketInstance } from "./utils/socketInstance.js";
 
 const app = express();
 
@@ -64,6 +65,8 @@ export const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
+
+setSocketInstance(io);
 
 export const connectedDrivers = new Map();
 

@@ -1,3 +1,4 @@
+import { isValidObjectId } from "../utils/objectIdValidator.js";
 import Booking from "../models/Booking.js";
 import Driver from "../models/Driver.js";
 import { successResponse, errorResponse } from "../utils/responseHelper.js";
@@ -124,11 +125,23 @@ export const assignDriver = async (req, res) => {
     const { bookingId } = req.params;
     const { driverId } = req.body;
 
+    // Validate the booking ID before querying MongoDB.
+    if (!isValidObjectId(bookingId)) {
+      return errorResponse(res, "Invalid booking ID", 400);
+    }
+
+    // Preserve the existing missing-driver validation.
     if (!driverId) {
       return errorResponse(res, "Driver ID is required", 400);
     }
 
+    // Validate the driver ID before querying MongoDB.
+    if (!isValidObjectId(driverId)) {
+      return errorResponse(res, "Invalid driver ID", 400);
+    }
+
     const booking = await Booking.findById(bookingId);
+
     if (!booking) {
       return errorResponse(res, "Booking not found", 404);
     }

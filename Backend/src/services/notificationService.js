@@ -1,5 +1,5 @@
 import Notification from "../models/Notification.js";
-import { io } from "../app.js";
+import { getSocketInstance } from "../utils/socketInstance.js";
 
 export const createNotification = async ({
   receiverId,
@@ -21,21 +21,15 @@ export const createNotification = async ({
 
     const room = `${receiverRole.toLowerCase()}:${receiverId}`;
 
-    io.to(room).emit("notification:new", {
+    getSocketInstance().to(room).emit("notification:new", {
       notification,
     });
 
-    console.log(
-      `🔔 Notification sent to ${room}`
-    );
+    console.log(`🔔 Notification sent to ${room}`);
 
     return notification;
   } catch (error) {
-    console.error(
-      "CREATE NOTIFICATION ERROR:",
-      error
-    );
-
+    console.error("CREATE NOTIFICATION ERROR:", error);
     return null;
   }
 };
